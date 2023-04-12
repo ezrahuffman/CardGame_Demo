@@ -14,7 +14,8 @@ public class Player : NetworkBehaviour
     [SerializeField] protected TMP_Text _enemyHealthTxt;
     [SerializeField] protected TMP_Text _playerHealthTxt;
     [SerializeField] protected Hand _enemyHand;
-    [SerializeField] protected Vector3 canvasTransformPosition;
+    [SerializeField] protected Vector3 _canvasTransformPosition;
+    [SerializeField] protected GameObject _skipButton;
     public EnemyStats enemyStats;
 
     protected HealthSystem _healthSystem;
@@ -153,6 +154,7 @@ public class Player : NetworkBehaviour
 
             _hand.GetUI().SetActive(false);
             _deck.GetUI().SetActive(false);
+            _skipButton.SetActive(false);
 
             return; 
         }
@@ -245,6 +247,17 @@ public class Player : NetworkBehaviour
     internal void HasDiscardedCard(Card card)
     {
         _hasDiscarded = true;
+        CheckTurn();
+    } 
+
+    public void Skip()
+    {
+        if (!canPlay)
+        {
+            return;
+        }
+
+        _hasSkipped = true;
         CheckTurn();
     }
     
