@@ -46,7 +46,7 @@ public class Card : MonoBehaviour
     public virtual void Action()
     {
         // Don't do anything if we can't play
-        if (!_owningPlayer.canPlay)
+        if (!_owningPlayer.canPlay || _owningPlayer.HasPlayed)
         {
             return;
         }

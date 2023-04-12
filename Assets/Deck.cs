@@ -57,6 +57,10 @@ public class Deck : NetworkBehaviour
     public void DrawCard()
     {
         Debug.Log($"Draw Card on {OwnerClientId}");
+        if (!_owningPlayer.CanDraw || !_owningPlayer.canPlay)
+        {
+            return;
+        }
 
         if(_remainingCards.Count == 0)
         {
@@ -89,6 +93,8 @@ public class Deck : NetworkBehaviour
         {
             DrawCardServerRpc();
         }
+
+        _owningPlayer.SetHasDrawn(true);
     }
 
     [ServerRpc]

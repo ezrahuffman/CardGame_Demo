@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -50,7 +51,23 @@ public class GameController : NetworkBehaviour
         if (IsServer)
         {
             player.OnDieEvent = OnPlayerDie;
+            player.onTurnOver += OnPlayerTurnOver;
         }
+    }
+
+    void OnPlayerTurnOver(Player player)
+    {
+        Player nextPlayer = GetOtherPlayer(player.NetworkObject);
+        nextPlayer.canPlay = true;
+
+        TurnOverClientRpc(nextPlayer.OwnerClientId);
+    }
+
+    [ClientRpc]
+    void TurnOverClientRpc(ulong nextPlayerOwnerClientID)
+    {
+        Player nextPlayer = _players[0].OwnerClientId == nextPlayerOwnerClientID ? _players[0] : _players[1];
+        nextPlayer.canPlay = true;
     }
 
     public void OnPlayerDie()
@@ -166,5 +183,17 @@ public class GameController : NetworkBehaviour
             return _players;
         }
     }
-    
+
+    internal void SetFirstTurn()
+    {
+        // Randomly select a player
+        UnityEngine.Random.InitState((int)Time.time);
+        int index = UnityEngine.Random.Range(0, 2);
+        Player startingPlayer = _players[index];
+        startingPlayer.canPlay = true;
+
+
+        //TODO: change name of function or use a different one
+        TurnOverClientRpc(startingPlayer.OwnerClientId);
+    }
 }

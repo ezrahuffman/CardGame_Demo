@@ -12,6 +12,7 @@ public class Player : NetworkBehaviour
     [SerializeField] protected Deck _deck;
     [SerializeField] protected Hand _hand;
     [SerializeField] protected TMP_Text _enemyHealthTxt;
+    [SerializeField] protected TMP_Text _playerHealthTxt;
     [SerializeField] protected Hand _enemyHand;
     [SerializeField] protected Vector3 canvasTransformPosition;
     public EnemyStats enemyStats;
@@ -19,8 +20,9 @@ public class Player : NetworkBehaviour
     protected HealthSystem _healthSystem;
 
     protected bool _hasDiscarded;
-    protected bool _hasPlay;
+    protected bool _hasPlayed;
     protected bool _hasSkipped;
+    protected bool _hasDrawnCard;
 
     public delegate void OnTurnOver(Player player);
     public OnTurnOver onTurnOver;
@@ -89,6 +91,11 @@ public class Player : NetworkBehaviour
         
     }
 
+    internal void SetHasDrawn(bool v)
+    {
+        _hasDrawnCard = v;
+    }
+
     [ClientRpc]
 
     void DiscardClientRpc(int cardIndex,ulong senderClientId)
@@ -153,6 +160,7 @@ public class Player : NetworkBehaviour
         Debug.Log($"ClientId= {NetworkManager.LocalClientId}, OwnerId: {OwnerClientId}");
 
         SetEnemyHealth(otherPlayer.Health);
+        SetPlayerHealth(Health);
 
         var trueEnemyHand = otherPlayer.Hand.GetAllSlots();
         var enemyHandSlots = _enemyHand.GetAllSlots();
@@ -175,6 +183,18 @@ public class Player : NetworkBehaviour
 
         _enemyHealthTxt.text = $"enemyHP: {health}";
         _enemyHealthTxt.enabled = true;
+    }
+
+    private void SetPlayerHealth(float health)
+    {
+        if (health == 0)
+        {
+            _playerHealthTxt.enabled = false;
+            return;
+        }
+
+        _playerHealthTxt.text = $"HP: {health}";
+        _playerHealthTxt.enabled = true;
     }
 
     [ServerRpc]
@@ -206,13 +226,17 @@ public class Player : NetworkBehaviour
         Initialize();
 
         if (_gameController.Players.Count == 2 && IsServer)
+        {
             _gameController.UpdateUI();
+            _gameController.SetFirstTurn();
+        }
     }
 
     // Called after player has used a card
     // TODO: FUTURE this could be good place for cards that don't end your turn
     internal void HasPerformedAction(Card card)
     {
+        _hasPlayed = true;
         CheckTurn();
     }
 
@@ -220,6 +244,7 @@ public class Player : NetworkBehaviour
     // TODO: FUTURE this could be good place for cards that don't end your turn
     internal void HasDiscardedCard(Card card)
     {
+        _hasDiscarded = true;
         CheckTurn();
     }
     
@@ -227,10 +252,34 @@ public class Player : NetworkBehaviour
     #region Turns
     void CheckTurn()
     {
-        if ((_hasDiscarded && _hasPlay) || (_hasSkipped))
+        if (GetShouldEndTurn())
         {
-            GoNextTurn();
+            GoNextTurnServerRpc();
         }
+
+        //if (IsOwner)
+        //{
+        //    CheckTurnServerRpc();
+        //}
+    }
+
+    bool GetShouldEndTurn()
+    {
+        return ((_hasDiscarded && _hasPlayed) || (_hasSkipped));
+    }
+
+    [ServerRpc]
+    void GoNextTurnServerRpc()
+    {
+        GoNextTurn();
+
+        GoNextTurnClientRpc();
+    }
+
+    [ClientRpc]
+    void GoNextTurnClientRpc()
+    {
+        GoNextTurn();
     }
 
     void GoNextTurn()
@@ -246,8 +295,10 @@ public class Player : NetworkBehaviour
     void ResetPlayer()
     {
         _hasDiscarded = false;
-        _hasPlay = false;
+        _hasPlayed = false;
         _hasSkipped = false;
+        _hasDrawnCard = false;
+        canPlay = false;
     }
     #endregion
 
@@ -313,6 +364,16 @@ public class Player : NetworkBehaviour
     public Hand Hand
     {
         get { return _hand; }
+    }
+
+    public bool CanDraw
+    {
+        get { return !_hasDrawnCard; }
+    }
+
+    public bool HasPlayed
+    {
+        get { return _hasPlayed; }
     }
 
 }
