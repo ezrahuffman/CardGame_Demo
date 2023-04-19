@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 
 // NOTE: THIS CLASS IS FOR SINGLE PLAYER ONLY AND IS NOT YET IMPLEMENTED
-public class Oponent : Player
+public class Oponent : GamePlayer
 {
     // Start is called before the first frame update
     void Start()

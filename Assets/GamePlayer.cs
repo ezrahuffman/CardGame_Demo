@@ -6,7 +6,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 
-public class Player : NetworkBehaviour
+public class GamePlayer : NetworkBehaviour
 {
     [SerializeField] protected float _maxHealth = 100f;
     [SerializeField] protected Deck _deck;
@@ -25,7 +25,7 @@ public class Player : NetworkBehaviour
     protected bool _hasSkipped;
     protected bool _hasDrawnCard;
 
-    public delegate void OnTurnOver(Player player);
+    public delegate void OnTurnOver(GamePlayer player);
     public OnTurnOver onTurnOver;
 
     public bool canPlay = false;
@@ -124,6 +124,8 @@ public class Player : NetworkBehaviour
     private void Initialize()
     {
 
+        Debug.Log("INITIALIZE PLAYER");
+
         if (_healthSystem == null)
         {
             _healthSystem = new HealthSystem(_maxHealth);
@@ -140,11 +142,18 @@ public class Player : NetworkBehaviour
         // Parent player to the canvas
         if (IsSpawned && IsOwner)
         {
-            ReparentPlayerToCanvasServerRpc();
+            ReparentPlayerToCanvasServerRpc(); //TODO: This might need to be moved to GameController.
         }
+
+        
     }
 
-    internal void UpdateUI(Player otherPlayer)
+    //public void ShowPlayer()
+    //{
+    //    gameObject.SetActive(true);
+    //}
+
+    internal void UpdateUI(GamePlayer otherPlayer)
     {
         if (!IsLocalPlayer)
         {
@@ -214,6 +223,7 @@ public class Player : NetworkBehaviour
         RectTransform rectTrans = transform as RectTransform;
         rectTrans.localPosition = Vector3.zero;
         rectTrans.rect.Set(rectTrans.rect.x, rectTrans.rect.y, Screen.width, Screen.height);
+        rectTrans.localScale = Vector3.one;
     }
 
     [ClientRpc]
@@ -227,11 +237,11 @@ public class Player : NetworkBehaviour
     {
         Initialize();
 
-        if (_gameController.Players.Count == 2 && IsServer)
-        {
-            _gameController.UpdateUI();
-            _gameController.SetFirstTurn();
-        }
+        //if (_gameController.Players.Count == 2 && IsServer)
+        //{
+        //    _gameController.UpdateUI();
+        //    _gameController.SetFirstTurn();
+        //}
     }
 
     // Called after player has used a card

@@ -6,13 +6,13 @@ public class CardData : ScriptableObject
 {
     public string cardName;
     public CardType cardType;
-    public Player owningPlayer { get; private set; }
+    public GamePlayer owningPlayer { get; private set; }
     [SerializeField]
     internal float effectAmnt;
     [SerializeField]
     internal float health;
 
-    internal void SetOwningPlayer(Player owningPlayer)
+    internal void SetOwningPlayer(GamePlayer owningPlayer)
     {
         this.owningPlayer = owningPlayer;
     }

@@ -21,7 +21,7 @@ public class Card : MonoBehaviour
     private string _cardName;
 
     [SerializeField]
-    private Player _owningPlayer;
+    private GamePlayer _owningPlayer;
 
     private void Awake()
     {
@@ -118,7 +118,7 @@ public class Card : MonoBehaviour
         return _data;
     }
 
-    public void SetOwningPlayer(Player player)
+    public void SetOwningPlayer(GamePlayer player)
     {
         _owningPlayer = player;
     }

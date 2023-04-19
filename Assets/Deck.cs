@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class Deck : NetworkBehaviour
 {
     [SerializeField] private List<CardData> _remainingCards;
-    [SerializeField] private Player _owningPlayer;
+    [SerializeField] private GamePlayer _owningPlayer;
     [SerializeField] private Deck _deck;
     [SerializeField] private Button _deckUI;
    
@@ -127,7 +127,7 @@ public class Deck : NetworkBehaviour
         return card;
     }
 
-    public void SetOwningPlayer(Player player)
+    public void SetOwningPlayer(GamePlayer player)
     {
         _owningPlayer = player;
     }

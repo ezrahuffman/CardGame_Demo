@@ -103,7 +103,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &67242517385598174
 RectTransform:
   m_ObjectHideFlags: 0
@@ -259,7 +259,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5325039363914487616
 RectTransform:
   m_ObjectHideFlags: 0
@@ -374,7 +374,11 @@ MonoBehaviour:
   _maxHealth: 100
   _deck: {fileID: 0}
   _hand: {fileID: 0}
-  canvasTransformPosition: {x: 325, y: 208, z: 0}
+  _enemyHealthTxt: {fileID: 0}
+  _playerHealthTxt: {fileID: 0}
+  _enemyHand: {fileID: 0}
+  _canvasTransformPosition: {x: 0, y: 0, z: 0}
+  _skipButton: {fileID: 0}
   canPlay: 1
 --- !u!114 &4123590526810339165
 MonoBehaviour:

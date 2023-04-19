@@ -5,7 +5,7 @@ public class Hand : MonoBehaviour
 {
     [SerializeField] private GameObject _handUI;
     [SerializeField] private Card[] _currentCards;
-    [SerializeField] private Player _player;
+    [SerializeField] private GamePlayer _player;
 
     private List<Card> _availableSlots = new List<Card>();
 
