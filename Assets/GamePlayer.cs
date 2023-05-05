@@ -16,6 +16,7 @@ public class GamePlayer : NetworkBehaviour
     [SerializeField] protected Hand _enemyHand;
     [SerializeField] protected Vector3 _canvasTransformPosition;
     [SerializeField] protected GameObject _skipButton;
+    [SerializeField] protected GameObject _turnIndicator;
     public EnemyStats enemyStats;
 
     protected HealthSystem _healthSystem;
@@ -164,9 +165,12 @@ public class GamePlayer : NetworkBehaviour
             _hand.GetUI().SetActive(false);
             _deck.GetUI().SetActive(false);
             _skipButton.SetActive(false);
+            _turnIndicator.SetActive(false);
 
             return; 
         }
+
+        _turnIndicator.gameObject.SetActive(canPlay);
 
         Debug.Log($"ClientId= {NetworkManager.LocalClientId}, OwnerId: {OwnerClientId}");
 

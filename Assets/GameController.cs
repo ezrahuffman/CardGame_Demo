@@ -238,8 +238,14 @@ public class GameController : NetworkBehaviour
     [ClientRpc]
     void TurnOverClientRpc(ulong nextPlayerOwnerClientID)
     {
+        Debug.Log($"Set player can play: {nextPlayerOwnerClientID}");
         GamePlayer nextPlayer = _players[0].OwnerClientId == nextPlayerOwnerClientID ? _players[0] : _players[1];
         nextPlayer.canPlay = true;
+
+        if (IsOwner)
+        {
+            UpdateUIServerRpc();
+        }
     }
 
     public void OnPlayerDie()
@@ -300,10 +306,18 @@ public class GameController : NetworkBehaviour
             return;
         }
 
+        Debug.Log("Update UI");
+
         CallUpdateUIOnAllPlayers();
 
         UpdateUIClientRpc();
        
+    }
+
+    [ServerRpc]
+    void UpdateUIServerRpc()
+    {
+        UpdateUI();
     }
 
     void CallUpdateUIOnAllPlayers()
@@ -446,6 +460,7 @@ public class GameController : NetworkBehaviour
     {
         UnreadyServer();
     }
+
     internal void SetFirstTurn()
     {
         Debug.Log("Set First Turn");
@@ -454,11 +469,13 @@ public class GameController : NetworkBehaviour
         UnityEngine.Random.InitState((int)Time.time);
         int index = UnityEngine.Random.Range(0, 2);
         GamePlayer startingPlayer = _players[index];
+
         startingPlayer.canPlay = true;
 
 
         //TODO: change name of function or use a different one
         TurnOverClientRpc(startingPlayer.OwnerClientId);
+        UpdateUI();
 
         if (IsServer)
         {
