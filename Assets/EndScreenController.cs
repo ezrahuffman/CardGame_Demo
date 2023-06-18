@@ -13,6 +13,20 @@ public class EndScreenController : MonoBehaviour
     internal void ShowMessage(ulong winnerClientId)
     {
         Debug.Log($"winner client id: {winnerClientId}");
-        _endGameMessageText.text = NetworkManager.Singleton.LocalClientId == winnerClientId ? _winningMessage : _losingMessage;
+        bool wonGame = NetworkManager.Singleton.LocalClientId == winnerClientId;
+        _endGameMessageText.text = wonGame ? _winningMessage : _losingMessage;
+        if (wonGame)
+        {
+            AddWinInCloudSave();
+        }
+    }
+
+    private async void AddWinInCloudSave()
+    {
+        CloudSaveClient cloudSaveClient = new CloudSaveClient();
+        // NOTE (Ezra): the  Load() method below should return the default value for an int (i.e. zero) if there is not yet a value.
+        // Zero as a default value should work as intended.
+        int currWins = await cloudSaveClient.Load<int>("winCount");
+        await cloudSaveClient.Save("winCount", currWins + 1);
     }
 }

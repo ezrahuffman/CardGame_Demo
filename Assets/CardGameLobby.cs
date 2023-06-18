@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -22,6 +23,8 @@ public class CardGameLobby : MonoBehaviour
 
 
     private const string KEY_RELAY_JOIN_CODE = "RelayJoinCode";
+
+    [SerializeField] TMP_Text profileInputText;
 
 
     public static CardGameLobby Instance { get; private set; }
@@ -63,13 +66,20 @@ public class CardGameLobby : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
 
+#if DEDICATED_SERVER
         InitializeUnityAuthentication();
+#endif
     }
 
     private void Start()
     {
         GameController.instance.OnPlayerDataNetworkListChanged += KitchenGameMultiplayer_OnPlayerDataNetworkListChanged;
         CharacterSelectReady.OnInstanceCreated += CharacterSelectReady_OnInstanceCreated;
+    }
+
+    public void SetProfileString()
+    {
+        InitializeUnityAuthentication(profileInputText.text.Remove(profileInputText.text.Length - 1));
     }
 
     private void CharacterSelectReady_OnInstanceCreated(object sender, EventArgs e)
@@ -103,19 +113,20 @@ public class CardGameLobby : MonoBehaviour
     }
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
-    private async void InitializeUnityAuthentication()
+    private async void InitializeUnityAuthentication(string profile = "")
     {
         if (UnityServices.State != ServicesInitializationState.Initialized)
         {
             InitializationOptions initializationOptions = new InitializationOptions();
 #if !DEDICATED_SERVER
-            initializationOptions.SetProfile(UnityEngine.Random.Range(0, 10000).ToString());
+            initializationOptions.SetProfile(profile);
 #endif
 
             await UnityServices.InitializeAsync(initializationOptions);
 
 #if !DEDICATED_SERVER
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            Debug.Log($"playerID = {AuthenticationService.Instance.PlayerId}");
 #endif
 
 #if DEDICATED_SERVER

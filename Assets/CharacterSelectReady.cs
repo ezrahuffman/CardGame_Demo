@@ -28,6 +28,7 @@ public class CharacterSelectReady : NetworkBehaviour
 
 
     private Dictionary<ulong, bool> playerReadyDictionary;
+    private bool _hasPickedDeck = false;
 
 
     private void Awake()
@@ -56,10 +57,20 @@ public class CharacterSelectReady : NetworkBehaviour
 
     public void SetPlayerReady()
     {
-        SetPlayerReadyServerRpc();
+        Debug.Log($"SetPlayerReady, _hasPickedDeck == {_hasPickedDeck}");
+        if (_hasPickedDeck)
+        {
+            SetPlayerReadyServerRpc();
+        }
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    public void SetHasPickedDeck(bool newHasPickedDeck)
+    {
+        Debug.Log($"SetHasPickedDeck({newHasPickedDeck})");
+        _hasPickedDeck = newHasPickedDeck;
+    }
+
+        [ServerRpc(RequireOwnership = false)]
     private void SetPlayerReadyServerRpc(ServerRpcParams serverRpcParams = default)
     {
         SetPlayerReadyClientRpc(serverRpcParams.Receive.SenderClientId);

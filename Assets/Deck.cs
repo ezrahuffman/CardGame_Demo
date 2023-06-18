@@ -33,6 +33,13 @@ public class Deck : NetworkBehaviour
     {
         Debug.Log("Initialize");
 
+        CardList cardList = FindAnyObjectByType<CardList>()?.GetComponent<CardList>();
+        if (cardList != null)
+        {
+            _remainingCards = cardList.cards;
+        }
+
+
         if (GameController.instance != null)
         {
             _gameController = GameController.instance;
