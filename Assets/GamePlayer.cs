@@ -172,7 +172,7 @@ public class GamePlayer : NetworkBehaviour
 
         _turnIndicator.gameObject.SetActive(canPlay);
 
-        Debug.Log($"ClientId= {NetworkManager.LocalClientId}, OwnerId: {OwnerClientId}");
+        Debug.Log($"ClientId= {NetworkManager.LocalClientId}, OwnerId: {OwnerClientId}, otherPlayer = {otherPlayer.OwnerClientId}");
 
         SetEnemyHealth(otherPlayer.Health);
         SetPlayerHealth(Health);
@@ -183,8 +183,17 @@ public class GamePlayer : NetworkBehaviour
         {
             var enemyCard = trueEnemyHand[i];
             var enemyCardUI = enemyHandSlots[i];
-            
-            enemyCardUI.PopulateData(enemyCard.GetCardData());
+            if (enemyCard.GetCardData() == null)
+            {
+                Debug.Log($"enemy card is null");
+            }
+            else
+            {
+                Debug.Log($"enemyCard_{i}: {enemyCard.GetCardData().cardName}");
+
+
+                enemyCardUI.PopulateData(enemyCard.GetCardData());
+            }
         }
     }
 
@@ -401,6 +410,12 @@ public class GamePlayer : NetworkBehaviour
     public bool HasPlayed
     {
         get { return _hasPlayed; }
+    }
+
+    // TODO: this should just be stored in variable
+    public CardList CardList
+    {
+        get { return GetComponent<CardList>(); }
     }
 
 }

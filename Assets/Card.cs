@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using Unity.Netcode;
 using System;
+using UnityEngine.UI;
 
 [System.Serializable]
 public class Card : MonoBehaviour
@@ -11,6 +12,7 @@ public class Card : MonoBehaviour
 
     [SerializeField] protected TMP_Text healthText;
     [SerializeField] protected TMP_Text cardName;
+    [SerializeField] protected Image _image;
 
     private GameController _gameController;
 
@@ -111,6 +113,7 @@ public class Card : MonoBehaviour
         _cardType = data.cardType;
         _cardName = data.cardName;
         _health = data.health;
+        _image.sprite = data.cardSprite;
     }
 
     public CardData GetCardData()

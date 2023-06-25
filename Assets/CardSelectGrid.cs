@@ -5,24 +5,31 @@ using System.Linq;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using Unity.Netcode;
+using Unity.Collections.LowLevel.Unsafe;
 
-public class CardSelectGrid : MonoBehaviour
+public class CardSelectGrid : NetworkBehaviour
 {
     [SerializeField] List<CardData> _availableCards;
     [SerializeField] Transform _panelTrans;
-    [SerializeField] GameObject _cardSelectElementPrefab;
+    [SerializeField] GameObject _unlockedCardSelectElementPrefab;
+    [SerializeField] GameObject _lockedCardSelectElementPrefab;
+    [SerializeField] GameObject _cardListPrefab;
     [SerializeField] int maxDeckSize = 10;
     [SerializeField] TMP_Text _cardCount;
     [SerializeField] CharacterSelectReady _characterSelectReady;
 
+    private CardList _cardList;
+
     // TODO: remove serialization, only serialized for easier debugging
-    [SerializeField] List<CardData> _playerCards;
+    [SerializeField] List<int> _playerCards;
 
     public delegate void OnDeckChange(bool isFull);
     public OnDeckChange onDeckChange;
 
     private GameObject _selectedDeckGO;
     private int _currWins = 0;
+    private GameController _gameController;
 
     // Get Cards From Collection
     private void Awake()
@@ -33,28 +40,64 @@ public class CardSelectGrid : MonoBehaviour
         _cardCount.text = $"0/{maxDeckSize}";
         onDeckChange += _characterSelectReady.SetHasPickedDeck;
 
-        CreateSelectedDeckObject();
+        _gameController = GameController.instance;
 
+#if !DEDICATED_SERVER
+        //InstantiateAndSpawnCardListServerRpc(_playerCards.ToArray(), NetworkManager.LocalClientId);
+        ////SetCardList();
         // This also shows the cards after awaited call is returned 
         SetCurrentWinsFromCloudSave();
+#endif
     }
-
 
     //TODO: check that waiting for a return from cloudSave isn't completely detrimental to the games performance
     private async void SetCurrentWinsFromCloudSave()
     {
-        CloudSaveClient cloudSaveClient = new CloudSaveClient();
-        _currWins = await cloudSaveClient.Load<int>("winCount");
+        CloudSaveClient cloudSaveClient = new();
+        _currWins = await cloudSaveClient?.Load<int>("winCount");
 
 
         ShowCards();
     }
 
-    private void CreateSelectedDeckObject()
+    
+
+    //private void UdateSelectedDeckObject()
+    //{
+    //    Debug.Log("UpdateSelectedDeckObject called");
+    //    if (_cardList  == null) { Debug.Log("cardlist is null"); return; }
+    //    _cardList?.UpdateList(_playerCards);
+
+    //    //UpdateCardListServerRpc(_playerCards.ToArray(), OwnerClientId);
+
+    //}
+
+    
+
+    [ServerRpc(RequireOwnership = false)]
+    public void InstantiateAndSpawnCardListServerRpc(int[] selectedCardIndexes, ulong OwnerClientId)
     {
-        _selectedDeckGO = new GameObject("selectedDeck");
-        _selectedDeckGO.AddComponent<CardList>().cards = _playerCards;
-        DontDestroyOnLoad(_selectedDeckGO); 
+        //Debug.Log("spawning selected cards");
+        //List<CardData> cards = new List<CardData>();
+        //foreach (int index in selectedCardIndexes)
+        //{
+
+        //    Debug.Log($"spawn card: {_availableCards[index]}");
+        //    cards.Add(_availableCards[index]);
+        //}
+
+        _selectedDeckGO = Instantiate(_cardListPrefab);
+
+        _cardList = _selectedDeckGO.GetComponent<CardList>();
+        //cardList.cards = cards;
+        //cardList.ownerClientId = OwnerClientId;
+
+        _cardList.Assign(_availableCards);
+        _cardList.UpdateList(_playerCards.ToArray());
+
+        _selectedDeckGO.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
+
+        Debug.Log($"Spawned cardList: {_selectedDeckGO.transform.GetInstanceID()}");
         
     }
 
@@ -63,40 +106,46 @@ public class CardSelectGrid : MonoBehaviour
     {
         Debug.Log($"currWins = {_currWins}");
 
-        foreach (var cardData in _availableCards)
+        for (int i = 0; i < _availableCards.Count; i++) 
         {
-            GameObject cardUIElement = Instantiate(_cardSelectElementPrefab, _panelTrans);
+            CardData cardData = _availableCards[i];
+            GameObject cardPrefab = cardData.winsToUnlock > _currWins ? _lockedCardSelectElementPrefab : _unlockedCardSelectElementPrefab;
+            GameObject cardUIElement = Instantiate(cardPrefab, _panelTrans);
             CardSelectElement cardElement = cardUIElement.GetComponent<CardSelectElement>();
             cardElement.grid = this;
+            cardData.selectionIndex = i;
             cardElement.PopulateData(cardData); 
         }
     }
 
     // Track Player Cards
 
-    public void ToggleCard(CardData cardData, GameObject cardObject)
+    public void ToggleCard(int cardIndex, GameObject cardObject)
     {
-        if (_playerCards.Contains(cardData))
+        if (_playerCards.Contains(cardIndex))
         {
-            RemoveCard(cardData, cardObject);
+            RemoveCard(cardIndex, cardObject);
         }
         else
         {
-            AddCard(cardData, cardObject);
+            AddCard(cardIndex, cardObject);
         }
     }
 
         // Add cards to deck
-    public void AddCard(CardData cardData, GameObject cardObject)
+    public void AddCard(int cardIndex, GameObject cardObject)
     {
         // TODO: it might be a good idea to have multiples of some cards 
         // TODO: (Optimization) dictionary/hashset would have faster look ups
         // Don't do anything if we already have the card
-        if (_playerCards.Contains(cardData))
+        if (_playerCards.Contains(cardIndex))
         {
             return;
         }
-        _playerCards.Add(cardData);
+
+        Debug.Log($"add card: {_availableCards[cardIndex].cardName}");
+
+        _playerCards.Add(cardIndex);
 
         ShowCardAsSelected(cardObject);
         //_availableCards.Remove(cardData);
@@ -117,16 +166,17 @@ public class CardSelectGrid : MonoBehaviour
     }
 
     // Remove cards from deck
-    public void RemoveCard(CardData cardData, GameObject cardObject)
+    public void RemoveCard(int cardIndex, GameObject cardObject)
     {
         // TODO: it might be a good idea to have multiples of some cards *this might not apply here
         // TODO: (Optimization) dictionary/hashset would have faster look ups
         // Don't do anything if we don't have the card
-        if (!_playerCards.Contains(cardData))
+        if (!_playerCards.Contains(cardIndex))
         {
             return;
         }
-        _playerCards.Remove(cardData);
+        Debug.Log($"remove card: {_availableCards[cardIndex].cardName}");
+        _playerCards.Remove(cardIndex);
 
         ShowCardAsUnselected(cardObject);
 
@@ -138,9 +188,10 @@ public class CardSelectGrid : MonoBehaviour
     {
         _cardCount.text = $"{_playerCards.Count}/{maxDeckSize}";
 
-        _selectedDeckGO.GetComponent<CardList>().cards = _playerCards;
+        //UdateSelectedDeckObject();
+        _gameController.UpdateCardList(NetworkManager.LocalClientId, _playerCards);
 
-        if(_playerCards.Count == maxDeckSize)
+        if (_playerCards.Count == maxDeckSize)
         {
             onDeckChange?.Invoke(true); 
             return;

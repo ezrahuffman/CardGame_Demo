@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,12 +33,7 @@ public class Deck : NetworkBehaviour
     private void Initialize()
     {
         Debug.Log("Initialize");
-
-        CardList cardList = FindAnyObjectByType<CardList>()?.GetComponent<CardList>();
-        if (cardList != null)
-        {
-            _remainingCards = cardList.cards;
-        }
+        
 
 
         if (GameController.instance != null)
@@ -51,12 +47,57 @@ public class Deck : NetworkBehaviour
             return;
         }
 
+        _hand = _owningPlayer.Hand;
+
+       // List<CardData> selectedCards = new List<CardData>() ;
+        foreach (var cardList in FindObjectsOfType<CardList>())
+        {
+            if (cardList.OwnerClientId == OwnerClientId)
+            {
+                _remainingCards = cardList.cards;
+            }
+        }
+
+        //SetRemainingCards(FindObjectOfType<CardList>().cards);
+
+        
         foreach (var card in _remainingCards)
         {
             card.SetOwningPlayer(_owningPlayer);
         }
 
-        _hand = _owningPlayer.Hand;
+        //SetRemainingCardsServerRpc(new SerializableCardList(FindObjectOfType<CardList>().cards));
+        
+        // TODO: might need to replicate this step across the network
+    }
+
+    //[ServerRpc]
+    //public void SetRemainingCardsServerRpc(SerializableCardList cardList)
+    //{
+    //    SetRemainingCards(cardList.cards);
+
+    //    SetRemainingCardsClientRpc(cardList);
+    //}
+
+    //[ClientRpc]
+    //private void SetRemainingCardsClientRpc(SerializableCardList cardList)
+    //{
+    //    SetRemainingCards(cardList.cards);
+    //}
+
+    public void SetDeck(List<CardData> cards)
+    {
+        _remainingCards = cards;
+    }
+
+    private void SetRemainingCards(List<CardData> cards)
+    {
+        _remainingCards = cards;
+
+        foreach (var card in _remainingCards)
+        {
+            card.SetOwningPlayer(_owningPlayer);
+        }
     }
 
     // Draw a card from the deck
@@ -81,6 +122,7 @@ public class Deck : NetworkBehaviour
         if(card != null)
         {
             var cardData = GetNextCard();
+            Debug.Log($"get next card {OwnerClientId}: {cardData.cardName} (Deck id: {GetInstanceID()})");
             card.PopulateData(cardData);
         }
         else

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Services.Multiplay;
 using Unity.Services.Authentication;
+using System.Linq;
 
 public class GameController : NetworkBehaviour
 {
@@ -13,6 +14,8 @@ public class GameController : NetworkBehaviour
 
     [SerializeField] private Card[] _currentCards;
     [SerializeField] private Card[] _deck;
+
+    private List<CardList> _selectedDecks;
 
     // TODO: it is assumed that there are only 2 players but this need to be enforced somewhere
     private List<GamePlayer> _players;
@@ -54,6 +57,7 @@ public class GameController : NetworkBehaviour
         playerName = PlayerPrefs.GetString(PLAYER_PREFS_PLAYER_NAME_MULTIPLAYER, "PlayerName" + UnityEngine.Random.Range(100, 1000));
 
         playerDataNetworkList = new NetworkList<PlayerData>();
+        _selectedDecks = new List<CardList>();
         playerDataNetworkList.OnListChanged += PlayerDataNetworkList_OnListChanged;
     }
     #endregion
@@ -132,34 +136,12 @@ public class GameController : NetworkBehaviour
 
 
             // Update the UI and set the first turn to start the game
+            // TODO: This might just be in the wrong order
             UpdateUI();
             SetFirstTurn();
         }
     }
 
-    //void ShowPlayersServer()
-    //{
-    //    if (!IsServer)
-    //    {
-    //        return;
-    //    }
-
-    //    ShowPlayerClientRpc();
-    //}
-
-    //void ShowPlayers()
-    //{
-    //    foreach (var player in _players)
-    //    {
-    //        player.ShowPlayer();
-    //    }
-    //}
-
-    //[ClientRpc]
-    //void ShowPlayerClientRpc()
-    //{
-    //    ShowPlayers();
-    //}
 
     public void KickPlayer(ulong clientId)
     {
@@ -209,10 +191,57 @@ public class GameController : NetworkBehaviour
             colorId = -1, // TODO: Remove colors completely, or implement them
         });
 
+        CreateCardList(clientId);
+
+        if (playerDataNetworkList.Count >= 2)
+        {
+            SpawnCardLists();
+            AssignCardListsClientRpc();
+        }
+
 #if !DEDICATED_SERVER
         SetPlayerNameServerRpc(GetPlayerName());
         SetPlayerIdServerRpc(AuthenticationService.Instance.PlayerId);
 #endif
+    }
+
+    [ClientRpc]
+    private void AssignCardListsClientRpc()
+    {
+        _selectedDecks = FindObjectsOfType<CardList>().ToList();
+
+        foreach (var cardList in _selectedDecks)
+        {
+            List<CardData> availalbeCards = Resources.LoadAll<CardData>("ScriptableCards/").ToList();
+            cardList.Assign(availalbeCards);
+        }
+    }
+
+    private void SpawnCardLists()
+    {
+        foreach (var cardList in _selectedDecks)
+        {
+            Debug.Log("SPAWN CARD LIST");
+            cardList.GetComponent<NetworkObject>().SpawnWithOwnership(cardList.clientId, false);
+        }
+    }
+
+    public void CreateCardList(ulong clientId)
+    {
+        Debug.Log("Create Card List");
+        //Spawn Player and assign owner to each client
+        GameObject go = Instantiate(cardListPrefab, Vector3.zero, Quaternion.identity);
+        //go.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
+
+        CardList cardList = go.GetComponent<CardList>();
+        cardList.clientId = clientId;
+
+        // TODO see if resources load still works
+        //CardData[] availableCards = Resources.LoadAll<CardData>("ScriptableCards/");
+        // TODO: this should be cached instead of pulling from resource folder
+        //cardList.Assign(clientId, availableCards.ToList());
+        _selectedDecks.Add(cardList);
+
     }
 
     public void AddPlayer(GamePlayer player)
@@ -226,6 +255,8 @@ public class GameController : NetworkBehaviour
             player.onTurnOver += OnPlayerTurnOver;
         }
     }
+
+    
 
     void OnPlayerTurnOver(GamePlayer player)
     {
@@ -370,7 +401,8 @@ public class GameController : NetworkBehaviour
         }
     }
 
-    [SerializeField]private GameObject playerPrefab;
+    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private GameObject cardListPrefab;
 
     public event EventHandler OnTryingToJoinGame;
     public event EventHandler OnFailedToJoinGame;
@@ -400,6 +432,8 @@ public class GameController : NetworkBehaviour
         SetPlayerNameServerRpc(GetPlayerName());
         SetPlayerIdServerRpc(AuthenticationService.Instance.PlayerId);
     }
+
+    
 
     public void StartHost()
     {
@@ -484,6 +518,50 @@ public class GameController : NetworkBehaviour
         else
         {
             UnreadyServer_ServerRpc();
+        }
+    }
+
+    internal void UpdateCardList(ulong localClientId, List<int> playerCards)
+    {
+        foreach (var card in _selectedDecks) 
+        {
+            Debug.Log($"cardList.ownerClientId ({card.OwnerClientId})" +
+               $" == localClientId({localClientId})");
+            if (card.OwnerClientId == localClientId)
+            {
+                card.UpdateList(playerCards.ToArray());
+            }
+        }
+    }
+
+    [ServerRpc]
+    private void UdateCardListServerRPC(ulong localClientId, int[] playerCards)
+    {
+        UpdateCardListLogic(localClientId, playerCards);
+
+        UpdateCardListClientRpc(localClientId, playerCards);
+    }
+
+    [ClientRpc]
+    private void UpdateCardListClientRpc(ulong localClientId, int[] playerCards)
+    {
+        UpdateCardListLogic(localClientId, playerCards);
+    }
+
+    private void UpdateCardListLogic(ulong localClientId, int[] playerCards)
+    {
+        Debug.Log($"Udate Card List: {String.Join(", ", playerCards)}");
+
+            
+        foreach (var cardList in _selectedDecks)
+        {
+            Debug.Log($"cardList.ownerClientId ({cardList.OwnerClientId})" +
+                $" == localClientId({localClientId})");
+            if(cardList.OwnerClientId == localClientId)
+            {
+                Debug.Log("actually update");
+                cardList.UpdateList(playerCards);
+            }
         }
     }
 }

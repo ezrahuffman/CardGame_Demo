@@ -9,7 +9,7 @@ public class CardSelectElement : MonoBehaviour
     [SerializeField] TMP_Text _nameText;
     [SerializeField] TMP_Text _healthText;
     [SerializeField] TMP_Text _damageText;
-    [SerializeField] Image image;
+    [SerializeField] Image _image;
 
     CardData _cardData;
 
@@ -18,7 +18,7 @@ public class CardSelectElement : MonoBehaviour
     // Called from button this component is attached to
     public void OnClick()
     {
-        grid.ToggleCard(_cardData, gameObject);
+        grid.ToggleCard(_cardData.selectionIndex, gameObject);
     }
 
     public void PopulateData(CardData data)
@@ -26,6 +26,7 @@ public class CardSelectElement : MonoBehaviour
         _nameText.text = data.cardName;
         _healthText.text = data.health.ToString();
         _damageText.text = data.effectAmnt.ToString();
+        _image.sprite = data.cardSprite;
 
         _cardData = data;
     }

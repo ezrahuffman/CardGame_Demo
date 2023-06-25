@@ -13,6 +13,7 @@ public class MatchmakerUI : MonoBehaviour {
 
 
     public const string DEFAULT_QUEUE = "default-queue";
+    public const string DEV_QUEUE = "Linux-Dev";
 
 
     [SerializeField] private Button findMatchButton;
@@ -33,6 +34,10 @@ public class MatchmakerUI : MonoBehaviour {
     }
 
     private async void FindMatch() {
+        string queueName = DEFAULT_QUEUE;
+#if UNITY_EDITOR
+        queueName = DEV_QUEUE;
+#endif
         Debug.Log("FindMatch");
 
         lookingForMatchTransform.gameObject.SetActive(true);
@@ -42,7 +47,8 @@ public class MatchmakerUI : MonoBehaviour {
              new MatchmakingPlayerData {
                   Skill = 100,
              })
-        }, new CreateTicketOptions { QueueName = DEFAULT_QUEUE });
+        }, 
+        new CreateTicketOptions { QueueName = queueName });
 
         // Wait a bit, don't poll right away
         pollTicketTimer = pollTicketTimerMax;
