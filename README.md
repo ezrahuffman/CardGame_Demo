@@ -34,5 +34,5 @@ The art for this game was mostly created using generative AI (specifically [CatB
 * Leaderboard
 * More cards (Player created cards if there are ever players)
 
-# Video Overview (coming soon)
+# Video Overview (coming 6/30/2023)
 
