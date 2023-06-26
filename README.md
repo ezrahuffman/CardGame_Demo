@@ -22,6 +22,7 @@ The art for this game was mostly created using generative AI (specifically [CatB
 * UI clean up (some updates are late and some text is hard/impossible to read on cards). There are also background assets with missing textures. 
 * More cards in deck 
 * Unlock cards with wins
+* Bug Smash (some bugs with UI and Matchmaking)
   
 ## Because this is a demo project, I don't want to spend too much time on it. I have accomplished much of what I set out to do with this project, but there are some obvious things that would make this game better. I don't know when I will return to this game, but when I do these are the next steps:
 * Use health stats from cards
