@@ -28,7 +28,7 @@ The art for this game was mostly created using generative AI (specifically [CatB
 * Leaderboard
 * More cards (Player created cards if there are ever players)
 
-# Video Overview (Full YouTube Video 6/30)
+# Video Overview (Full YouTube Video 7/7)
 
 
 https://github.com/thoroughlyswooped/CardGame_Demo/assets/35412394/32ff16e2-e05a-4bf5-b117-99cf72e8f9f9
