@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode.Transports.UTP;
 using Unity.Netcode;
@@ -34,6 +33,11 @@ public class MatchmakerUI : MonoBehaviour {
     }
 
     private async void FindMatch() {
+        if (AuthenticationService.Instance.PlayerId == null)
+        {
+            CardGameLobby.Instance.SetProfileString(); // set default if not logged in
+        }
+
         string queueName = DEFAULT_QUEUE;
 #if UNITY_EDITOR
         queueName = DEV_QUEUE;

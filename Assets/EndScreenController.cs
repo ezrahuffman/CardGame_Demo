@@ -29,4 +29,19 @@ public class EndScreenController : MonoBehaviour
         int currWins = await cloudSaveClient.Load<int>("winCount");
         await cloudSaveClient.Save("winCount", currWins + 1);
     }
+
+    public void PlayAgainOnClick()
+    {
+        NetworkManager.Singleton.Shutdown();
+        Destroy(FindObjectOfType<NetworkManager>().gameObject);
+        Destroy(FindObjectOfType<GameController>().gameObject);
+        Destroy(FindObjectOfType<CardGameLobby>().gameObject);
+        Loader.Load(Loader.Scene.LobbyScene);
+    }
+
+    public void ExitOnClick()
+    {
+        NetworkManager.Singleton.Shutdown();
+        Application.Quit();
+    }
 }

@@ -1,12 +1,9 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using Unity.Netcode;
-using Unity.Collections.LowLevel.Unsafe;
 
 public class CardSelectGrid : NetworkBehaviour
 {
@@ -43,8 +40,6 @@ public class CardSelectGrid : NetworkBehaviour
         _gameController = GameController.instance;
 
 #if !DEDICATED_SERVER
-        //InstantiateAndSpawnCardListServerRpc(_playerCards.ToArray(), NetworkManager.LocalClientId);
-        ////SetCardList();
         // This also shows the cards after awaited call is returned 
         SetCurrentWinsFromCloudSave();
 #endif
@@ -62,43 +57,17 @@ public class CardSelectGrid : NetworkBehaviour
 
     
 
-    //private void UdateSelectedDeckObject()
-    //{
-    //    Debug.Log("UpdateSelectedDeckObject called");
-    //    if (_cardList  == null) { Debug.Log("cardlist is null"); return; }
-    //    _cardList?.UpdateList(_playerCards);
-
-    //    //UpdateCardListServerRpc(_playerCards.ToArray(), OwnerClientId);
-
-    //}
-
-    
-
     [ServerRpc(RequireOwnership = false)]
     public void InstantiateAndSpawnCardListServerRpc(int[] selectedCardIndexes, ulong OwnerClientId)
     {
-        //Debug.Log("spawning selected cards");
-        //List<CardData> cards = new List<CardData>();
-        //foreach (int index in selectedCardIndexes)
-        //{
-
-        //    Debug.Log($"spawn card: {_availableCards[index]}");
-        //    cards.Add(_availableCards[index]);
-        //}
-
         _selectedDeckGO = Instantiate(_cardListPrefab);
 
         _cardList = _selectedDeckGO.GetComponent<CardList>();
-        //cardList.cards = cards;
-        //cardList.ownerClientId = OwnerClientId;
 
         _cardList.Assign(_availableCards);
         _cardList.UpdateList(_playerCards.ToArray());
 
         _selectedDeckGO.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-
-        Debug.Log($"Spawned cardList: {_selectedDeckGO.transform.GetInstanceID()}");
-        
     }
 
     // Display Cards
@@ -109,10 +78,12 @@ public class CardSelectGrid : NetworkBehaviour
         for (int i = 0; i < _availableCards.Count; i++) 
         {
             CardData cardData = _availableCards[i];
-            GameObject cardPrefab = cardData.winsToUnlock > _currWins ? _lockedCardSelectElementPrefab : _unlockedCardSelectElementPrefab;
+            bool cardIsLocked = cardData.winsToUnlock > _currWins;
+            GameObject cardPrefab = cardIsLocked ? _lockedCardSelectElementPrefab : _unlockedCardSelectElementPrefab;
             GameObject cardUIElement = Instantiate(cardPrefab, _panelTrans);
             CardSelectElement cardElement = cardUIElement.GetComponent<CardSelectElement>();
             cardElement.grid = this;
+            cardElement.cardIsLocked = cardIsLocked;
             cardData.selectionIndex = i;
             cardElement.PopulateData(cardData); 
         }
@@ -122,6 +93,12 @@ public class CardSelectGrid : NetworkBehaviour
 
     public void ToggleCard(int cardIndex, GameObject cardObject)
     {
+        if (_playerCards.Count >= maxDeckSize && !_playerCards.Contains(cardIndex))
+        {
+            return;
+        }
+
+
         if (_playerCards.Contains(cardIndex))
         {
             RemoveCard(cardIndex, cardObject);
@@ -148,7 +125,6 @@ public class CardSelectGrid : NetworkBehaviour
         _playerCards.Add(cardIndex);
 
         ShowCardAsSelected(cardObject);
-        //_availableCards.Remove(cardData);
 
         CheckForFullDeck();
     }
@@ -188,7 +164,6 @@ public class CardSelectGrid : NetworkBehaviour
     {
         _cardCount.text = $"{_playerCards.Count}/{maxDeckSize}";
 
-        //UdateSelectedDeckObject();
         _gameController.UpdateCardList(NetworkManager.LocalClientId, _playerCards);
 
         if (_playerCards.Count == maxDeckSize)

@@ -14,10 +14,12 @@ public class CardSelectElement : MonoBehaviour
     CardData _cardData;
 
     public CardSelectGrid grid;
+    [HideInInspector] public bool cardIsLocked;
 
     // Called from button this component is attached to
     public void OnClick()
     {
+        if (cardIsLocked) { return; };
         grid.ToggleCard(_cardData.selectionIndex, gameObject);
     }
 

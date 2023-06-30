@@ -150,7 +150,14 @@ public class CardGameLobby : MonoBehaviour
         }
         else
         {
+#if !DEDICATED_SERVER
             // Already Initialized
+            AuthenticationService.Instance.SignOut();
+            AuthenticationService.Instance.SwitchProfile(profile);
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            Debug.Log($"playerID = {AuthenticationService.Instance.PlayerId}");
+#endif  
+
 #if DEDICATED_SERVER
             Debug.Log("DEDICATED_SERVER LOBBY - ALREADY INIT");
 

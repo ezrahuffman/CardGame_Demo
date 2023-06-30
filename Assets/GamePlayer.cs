@@ -17,6 +17,8 @@ public class GamePlayer : NetworkBehaviour
     [SerializeField] protected Vector3 _canvasTransformPosition;
     [SerializeField] protected GameObject _skipButton;
     [SerializeField] protected GameObject _turnIndicator;
+    [SerializeField] protected GameObject _background;
+    [SerializeField] protected GameObject _panel;
     public EnemyStats enemyStats;
 
     protected HealthSystem _healthSystem;
@@ -149,11 +151,6 @@ public class GamePlayer : NetworkBehaviour
         
     }
 
-    //public void ShowPlayer()
-    //{
-    //    gameObject.SetActive(true);
-    //}
-
     internal void UpdateUI(GamePlayer otherPlayer)
     {
         if (!IsLocalPlayer)
@@ -166,13 +163,14 @@ public class GamePlayer : NetworkBehaviour
             _deck.GetUI().SetActive(false);
             _skipButton.SetActive(false);
             _turnIndicator.SetActive(false);
+            _background.SetActive(false);
+            _panel.SetActive(false);
 
             return; 
         }
 
         _turnIndicator.gameObject.SetActive(canPlay);
-
-        Debug.Log($"ClientId= {NetworkManager.LocalClientId}, OwnerId: {OwnerClientId}, otherPlayer = {otherPlayer.OwnerClientId}");
+        _skipButton.SetActive(canPlay);
 
         SetEnemyHealth(otherPlayer.Health);
         SetPlayerHealth(Health);
@@ -249,12 +247,6 @@ public class GamePlayer : NetworkBehaviour
     private void Start()
     {
         Initialize();
-
-        //if (_gameController.Players.Count == 2 && IsServer)
-        //{
-        //    _gameController.UpdateUI();
-        //    _gameController.SetFirstTurn();
-        //}
     }
 
     // Called after player has used a card
@@ -322,10 +314,7 @@ public class GamePlayer : NetworkBehaviour
     {
         ResetPlayer();
 
-        if (onTurnOver != null)
-        {
-            onTurnOver.Invoke(this);
-        }
+        onTurnOver?.Invoke(this);
     }
 
     void ResetPlayer()

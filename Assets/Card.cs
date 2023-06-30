@@ -10,8 +10,9 @@ public class Card : MonoBehaviour
     [SerializeField]protected float _effectAmnt;
     [SerializeField]protected float _health;
 
-    [SerializeField] protected TMP_Text healthText;
-    [SerializeField] protected TMP_Text cardName;
+    [SerializeField] protected TMP_Text _healthText;
+    [SerializeField] protected TMP_Text _effectAmntText;
+    [SerializeField] protected TMP_Text _cardNameText;
     [SerializeField] protected Image _image;
 
     private GameController _gameController;
@@ -91,8 +92,9 @@ public class Card : MonoBehaviour
 
     private void PopulateUI(CardData data)
     {
-        cardName.text = data.cardName;
-        healthText.text = data.health.ToString();
+        _cardNameText.text = data.cardName;
+        _healthText.text = data.health.ToString();
+        _effectAmntText.text = data.effectAmnt.ToString();
 
         gameObject.SetActive(true);
     }

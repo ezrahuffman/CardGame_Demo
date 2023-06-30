@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,24 +16,18 @@ public class Deck : NetworkBehaviour
 
     public void Start()
     {
-        Debug.Log("Start");
         Initialize();
     }
 
 
     public override void OnNetworkSpawn()
     {
-        Debug.Log("OnNetworkSpawn");
         Initialize();
         base.OnNetworkSpawn();
     }
 
     private void Initialize()
     {
-        Debug.Log("Initialize");
-        
-
-
         if (GameController.instance != null)
         {
             _gameController = GameController.instance;
@@ -49,7 +41,6 @@ public class Deck : NetworkBehaviour
 
         _hand = _owningPlayer.Hand;
 
-       // List<CardData> selectedCards = new List<CardData>() ;
         foreach (var cardList in FindObjectsOfType<CardList>())
         {
             if (cardList.OwnerClientId == OwnerClientId)
@@ -57,33 +48,12 @@ public class Deck : NetworkBehaviour
                 _remainingCards = cardList.cards;
             }
         }
-
-        //SetRemainingCards(FindObjectOfType<CardList>().cards);
-
         
         foreach (var card in _remainingCards)
         {
             card.SetOwningPlayer(_owningPlayer);
         }
-
-        //SetRemainingCardsServerRpc(new SerializableCardList(FindObjectOfType<CardList>().cards));
-        
-        // TODO: might need to replicate this step across the network
     }
-
-    //[ServerRpc]
-    //public void SetRemainingCardsServerRpc(SerializableCardList cardList)
-    //{
-    //    SetRemainingCards(cardList.cards);
-
-    //    SetRemainingCardsClientRpc(cardList);
-    //}
-
-    //[ClientRpc]
-    //private void SetRemainingCardsClientRpc(SerializableCardList cardList)
-    //{
-    //    SetRemainingCards(cardList.cards);
-    //}
 
     public void SetDeck(List<CardData> cards)
     {

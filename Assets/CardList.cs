@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class CardList : NetworkBehaviour
 {
@@ -38,15 +36,6 @@ public class CardList : NetworkBehaviour
     public void UpdateListServerRpc(int[] indexArr)
     {
         // NOTE: There is no _availableCards on server
-        //List<CardData> temp = new List<CardData>();
-        //foreach (var index in indexArr)
-        //{
-        //    Debug.Log($"add card: {_availableCards[index]}");
-
-        //    temp.Add(_availableCards[index]);
-        //}
-
-        //cards = temp;
 
         UpdateListClientRpc(indexArr);
     }

@@ -31,12 +31,6 @@ public class GameController : NetworkBehaviour
     // TODO: Look into a way to only have the game controller on the Server
     private void Awake()
     {
-        //if (!IsServer)
-        //{
-        //    Destroy(this);
-        //    return; 
-        //}
-
         _players = new List<GamePlayer>();
 
         if (instance == null)
@@ -46,7 +40,6 @@ public class GameController : NetworkBehaviour
         else
         {
             Debug.LogError("TRYING TO MAKE DUPLICATE SINGLETON");
-            //Destroy(this);
             return;
         }
 
@@ -228,20 +221,12 @@ public class GameController : NetworkBehaviour
 
     public void CreateCardList(ulong clientId)
     {
-        Debug.Log("Create Card List");
         //Spawn Player and assign owner to each client
         GameObject go = Instantiate(cardListPrefab, Vector3.zero, Quaternion.identity);
-        //go.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
 
         CardList cardList = go.GetComponent<CardList>();
         cardList.clientId = clientId;
-
-        // TODO see if resources load still works
-        //CardData[] availableCards = Resources.LoadAll<CardData>("ScriptableCards/");
-        // TODO: this should be cached instead of pulling from resource folder
-        //cardList.Assign(clientId, availableCards.ToList());
         _selectedDecks.Add(cardList);
-
     }
 
     public void AddPlayer(GamePlayer player)
@@ -273,10 +258,11 @@ public class GameController : NetworkBehaviour
         GamePlayer nextPlayer = _players[0].OwnerClientId == nextPlayerOwnerClientID ? _players[0] : _players[1];
         nextPlayer.canPlay = true;
 
-        if (IsOwner)
-        {
-            UpdateUIServerRpc();
-        }
+        
+        UpdateUIServerRpc();
+        
+
+        //Debug.Log("NOT OWNER CANT UPDATE UI AFTER TURN OVER");
     }
 
     public void OnPlayerDie()
@@ -308,19 +294,6 @@ public class GameController : NetworkBehaviour
         FindObjectOfType<EndScreenController>()?.ShowMessage(_winningPlayer.OwnerClientId);
     }
 
-    
-   
-
-    // Event called when player ends their turn
-    //private void OnPlayerTurnOver(Player player)
-    //{
-    //    // Lock current player from performing actions
-    //    player.canPlay = false;
-
-    //    // Unlock other player to play
-    //    GetOtherPlayer(player).canPlay = true;
-    //}
-
     // Get the other player
     GamePlayer GetOtherPlayer(NetworkObject sender)
     {
@@ -333,11 +306,12 @@ public class GameController : NetworkBehaviour
     {
         if (!IsServer)
         {
-            Debug.LogWarning("Attempting to call server function on client");
+            // TODO: Maybe call server rpc here if owner but not server 
+            Debug.LogWarning("ATTEMPTING TO CALL UPDATEUI() ON CLIENT");
             return;
         }
 
-        Debug.Log("Update UI");
+        Debug.Log("UPDATE UI");
 
         CallUpdateUIOnAllPlayers();
 
@@ -345,7 +319,9 @@ public class GameController : NetworkBehaviour
        
     }
 
-    [ServerRpc]
+    // This just updates the UI so I don't care if owners are calling it
+    // NOTE: could also just get the owning player and call from there
+    [ServerRpc(RequireOwnership = false)]
     void UpdateUIServerRpc()
     {
         UpdateUI();
@@ -353,6 +329,7 @@ public class GameController : NetworkBehaviour
 
     void CallUpdateUIOnAllPlayers()
     {
+        Debug.Log("CALL UPDATE UI ON ALL PLAYERS ON CLIENT");
         foreach (var player in _players)
         {
             GamePlayer otherPlayer = GetOtherPlayer(player.NetworkObject);

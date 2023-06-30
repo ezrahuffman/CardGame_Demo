@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardName: Witch
   cardType: 0
-  winsToUnlock: 0
+  winsToUnlock: 3
   effectAmnt: 15
   health: 10
   cardSprite: {fileID: 21300000, guid: 1e5747005fcce5c42a7bc4fa6a7d5ad8, type: 3}
+  selectionIndex: 0
