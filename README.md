@@ -16,5 +16,27 @@ The art for this game was mostly created using generative AI (specifically [CatB
 * Play Card - Left Mouse
 * Discard Card - Right Mouse
 
-# Video Overview (coming soon)
+# Future Plans
+## There are some small changes that I plan to make before completely abandoning this project. These are small quality-of-life updates that I plan to do in the next week (before 7/1/2023).
+* Full game loop, so players can return to match making
+* UI clean up (some updates are late and some text is hard/impossible to read on cards). There are also background assets with missing textures. 
+* More cards in deck 
+* Unlock cards with wins
+* Bug Smash (some bugs with UI and Matchmaking)
+  
+## Because this is a demo project, I don't want to spend too much time on it. I have accomplished much of what I set out to do with this project, but there are some obvious things that would make this game better. I don't know when I will return to this game, but when I do these are the next steps:
+* Use health stats from cards
+* SOUND (there is currently no sound for the game)
+* Animations
+* More sophisticated game rules. Currently the game is very one-dimensional
+* Text-chat
+* AI game mode (single player)
+* Friends + Lobby (find, add friends and group into lobbies)
+* Leaderboard
+* More cards (Player created cards if there are ever players)
+
+# Video Overview (Full YouTube Video 6/30)
+
+
+https://github.com/thoroughlyswooped/CardGame_Demo/assets/35412394/32ff16e2-e05a-4bf5-b117-99cf72e8f9f9
 
