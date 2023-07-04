@@ -322,7 +322,7 @@ public class GameController : NetworkBehaviour
     // This just updates the UI so I don't care if owners are calling it
     // NOTE: could also just get the owning player and call from there
     [ServerRpc(RequireOwnership = false)]
-    void UpdateUIServerRpc()
+    public void UpdateUIServerRpc()
     {
         UpdateUI();
     }

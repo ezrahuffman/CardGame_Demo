@@ -21,7 +21,7 @@ public class MatchmakerUI : MonoBehaviour {
 
     private CreateTicketResponse createTicketResponse;
     private float pollTicketTimer;
-    private float pollTicketTimerMax = 1.1f;
+    private float pollTicketTimerMax = 1.5f;
 
 
     private void Awake() {
@@ -36,6 +36,12 @@ public class MatchmakerUI : MonoBehaviour {
         if (AuthenticationService.Instance.PlayerId == null)
         {
             CardGameLobby.Instance.SetProfileString(); // set default if not logged in
+        }
+
+        if (!AuthenticationService.Instance.IsSignedIn)
+        {
+            Debug.Log("Not signed in");
+            return;
         }
 
         string queueName = DEFAULT_QUEUE;

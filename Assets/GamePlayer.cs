@@ -5,7 +5,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
-
+[System.Serializable]
 public class GamePlayer : NetworkBehaviour
 {
     [SerializeField] protected float _maxHealth = 100f;
@@ -23,9 +23,13 @@ public class GamePlayer : NetworkBehaviour
 
     protected HealthSystem _healthSystem;
 
+    [SerializeField]
     protected bool _hasDiscarded;
+    [SerializeField]
     protected bool _hasPlayed;
+    [SerializeField]
     protected bool _hasSkipped;
+    [SerializeField]
     protected bool _hasDrawnCard;
 
     public delegate void OnTurnOver(GamePlayer player);
@@ -82,6 +86,11 @@ public class GamePlayer : NetworkBehaviour
         }
         HideCardAndOpenSlot(card);
         DiscardServerRpc(cardIndex);
+
+        if (IsOwner)
+        {
+            UpdateUIServerRpc();
+        }
     }
     
     [ServerRpc]
@@ -111,6 +120,9 @@ public class GamePlayer : NetworkBehaviour
 
         // Hide the enemy card for players that are not the local player
         HideCardAndOpenSlot(Hand.GetAllSlots()[cardIndex]);
+
+        // This is the only server rpc that doesn't require the sender to be the owner
+        _gameController.UpdateUIServerRpc();
     }
 
     void HideCardAndOpenSlot(Card card)
@@ -184,6 +196,7 @@ public class GamePlayer : NetworkBehaviour
             if (enemyCard.GetCardData() == null)
             {
                 Debug.Log($"enemy card is null");
+                enemyCardUI.gameObject.SetActive(false);
             }
             else
             {
@@ -280,6 +293,8 @@ public class GamePlayer : NetworkBehaviour
     #region Turns
     void CheckTurn()
     {
+        Debug.Log($"CheckTurn() on {NetworkManager.LocalClientId}; ownerId: {OwnerClientId}");
+
         if (GetShouldEndTurn())
         {
             GoNextTurnServerRpc();

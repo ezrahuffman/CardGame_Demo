@@ -139,7 +139,7 @@ public class CardGameLobby : MonoBehaviour
             multiplayEventCallbacks.SubscriptionStateChanged += MultiplayEventCallbacks_SubscriptionStateChanged;
             IServerEvents serverEvents = await MultiplayService.Instance.SubscribeToServerEventsAsync(multiplayEventCallbacks);
 
-            serverQueryHandler = await MultiplayService.Instance.StartServerQueryHandlerAsync(4, "MyServerName", "KitchenChaos", "5.6", "Default");
+            serverQueryHandler = await MultiplayService.Instance.StartServerQueryHandlerAsync(2, "MyServerName", "CardGame", "5.6", "Default");
 
             var serverConfig = MultiplayService.Instance.ServerConfig;
             if (serverConfig.AllocationId != "") {
