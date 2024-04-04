@@ -40,6 +40,7 @@ public class SinglePlayerCardSelectGrid : MonoBehaviour, ICardSelectGrid
         // This also shows the cards after awaited call is returned 
         SetCurrentWins();
 #endif
+        InstantiateAndSpawnCardList();
     }
 
     //TODO: check that waiting for a return from cloudSave isn't completely detrimental to the games performance
@@ -60,16 +61,16 @@ public class SinglePlayerCardSelectGrid : MonoBehaviour, ICardSelectGrid
 
 
     //[ServerRpc(RequireOwnership = false)]
-    public void InstantiateAndSpawnCardListServerRpc(int[] selectedCardIndexes, ulong OwnerClientId)
+    public void InstantiateAndSpawnCardList()
     {
         _selectedDeckGO = Instantiate(_cardListPrefab);
 
         _cardList = _selectedDeckGO.GetComponent<CardList>();
-
+        _cardList.isSinglePlayer = true;
         _cardList.Assign(_availableCards);
-        _cardList.UpdateList(_playerCards.ToArray());
+        _cardList.UpdateList(_playerCards.ToArray(), true);
 
-        
+
     }
 
     // Display Cards
@@ -166,14 +167,19 @@ public class SinglePlayerCardSelectGrid : MonoBehaviour, ICardSelectGrid
     {
         _cardCount.text = $"{_playerCards.Count}/{maxDeckSize}";
 
-        _gameController.UpdateCardList(_playerCards);
 
         if (_playerCards.Count == maxDeckSize)
         {
+            _gameController.UpdateCardList(_playerCards);
             isDeckFull = true;
             return;
         }
 
         isDeckFull = false;
+    }
+
+    public List<CardData> AvailableCards
+    {
+        get { return _availableCards; }
     }
 }

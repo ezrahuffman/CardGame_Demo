@@ -13,6 +13,8 @@ public class CardList : NetworkBehaviour
 
     public ulong clientId; // just used on server
 
+    public bool isSinglePlayer;
+
     public void Assign(List<CardData> availableCards)
     {   
         hasBeenAssigned = true;
@@ -20,8 +22,21 @@ public class CardList : NetworkBehaviour
         _availableCards = availableCards;
     }
 
-    public void UpdateList(int[] indexArr)
+    public void UpdateList(int[] indexArr, bool isSinglePlayer = false)
     {
+        if (isSinglePlayer)
+        {
+            List<CardData> temp = new List<CardData>();
+            foreach (var index in indexArr)
+            {
+                Debug.Log($"add card: {_availableCards[index]}");
+                temp.Add(_availableCards[index]);
+            }
+
+            cards = temp;
+            return;
+        }
+
         if(!IsOwner)
         {
             Debug.Log("not owner don't update");

@@ -6,14 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class SinglePlayerGameController : MonoBehaviour
-{
-    private const string PLAYER_PREFS_PLAYER_NAME_MULTIPLAYER = "PlayerNameMultiplayer";
-    public const int MAX_PLAYER_AMOUNT = 2; // TODO: this is duplicated in one of the lobby scripts
-
-    [SerializeField] private Card[] _currentCards;
-    [SerializeField] private Card[] _deck;
-
-    private List<CardList> _selectedDecks;
+{   private CardList _cardList;
 
     // TODO: it is assumed that there are only 2 players but this need to be enforced somewhere
     private List<GamePlayer> _players;
@@ -44,17 +37,15 @@ public class SinglePlayerGameController : MonoBehaviour
         // TODO: look into better ways to maintain states
         DontDestroyOnLoad(this);
 
-        playerName = PlayerPrefs.GetString(PLAYER_PREFS_PLAYER_NAME_MULTIPLAYER, "PlayerName" + UnityEngine.Random.Range(100, 1000));
-
-        _selectedDecks = new List<CardList>();
     }
     #endregion
 
-    public void SetPlayerName(string playerName)
+    private void Start()
     {
-        this.playerName = playerName;
-
-        PlayerPrefs.SetString(PLAYER_PREFS_PLAYER_NAME_MULTIPLAYER, playerName);
+        List<CardData> availableCards = FindObjectOfType<SinglePlayerCardSelectGrid>().AvailableCards;
+        _cardList = CreateCardList(availableCards);
+        Debug.Log($"availableCards: {availableCards.Count}");
+        
     }
 
 
@@ -66,8 +57,11 @@ public class SinglePlayerGameController : MonoBehaviour
     private void OnLevelWasLoaded(int level)
     {
         // Start the game when we load into the game scene
-        if (SceneManager.GetActiveScene().name == Loader.Scene.GameScene.ToString())
+        if (SceneManager.GetActiveScene().name == Loader.Scene.SinglePlayerGameScene.ToString())
         {
+            //_currentCards = _cardList.c;
+            Debug.Log($"cards: {_cardList.cards.Count}");
+
             // Update the UI and set the first turn to start the game
             // TODO: This might just be in the wrong order
             UpdateUI();
@@ -77,23 +71,26 @@ public class SinglePlayerGameController : MonoBehaviour
    
     private void SpawnCardLists()
     {
-        foreach (var cardList in _selectedDecks)
-        {
-            Debug.Log("SPAWN CARD LIST");
+        //foreach (var cardList in _selectedDecks)
+        //{
+        //    Debug.Log("SPAWN CARD LIST");
 
-            //TODO: Spawn cards locally here
-            //cardList.GetComponent<NetworkObject>().SpawnWithOwnership(cardList.clientId, false);
-        }
+        //TODO: Spawn cards locally here
+        //    cardList.GetComponent<NetworkObject>().SpawnWithOwnership(cardList.clientId, false);
+        //}
     }
 
-    public void CreateCardList(ulong clientId)
+    public CardList CreateCardList(List<CardData> availableCards)
     {
         //Spawn Player and assign owner to each client
         GameObject go = Instantiate(cardListPrefab, Vector3.zero, Quaternion.identity);
 
         CardList cardList = go.GetComponent<CardList>();
-        cardList.clientId = clientId;
-        _selectedDecks.Add(cardList);
+        cardList.clientId = 0;
+        cardList.Assign(availableCards);
+        cardList.isSinglePlayer = true;
+        
+        return cardList;
     }
 
     public void AddPlayer(GamePlayer player)
@@ -186,19 +183,28 @@ public class SinglePlayerGameController : MonoBehaviour
         // Randomly select a player
         UnityEngine.Random.InitState((int)Time.time);
         int index = UnityEngine.Random.Range(0, 2);
-        GamePlayer startingPlayer = _players[index];
+        //GamePlayer startingPlayer = _players[index];
 
-        startingPlayer.canPlay = true;
+        if (index == 0)
+        {
+            Debug.Log("Player Starts");
+            //startingPlayer.canPlay = true;
+            //startingPlayer.StartTurn();
+        }
+        else
+        {
+            Debug.Log("AI Starts");
+            //GamePlayer nextPlayer = GetOtherPlayer(startingPlayer);
+            //nextPlayer.canPlay = true;
+            //nextPlayer.StartTurn();
+        }
         UpdateUI();
 
     }
 
     internal void UpdateCardList(List<int> playerCards)
     {
-        foreach (var card in _selectedDecks)
-        {
-            card.UpdateList(playerCards.ToArray());
-        }
+        _cardList.UpdateList(playerCards.ToArray(), true);   
     }
 
    
@@ -210,15 +216,15 @@ public class SinglePlayerGameController : MonoBehaviour
         Debug.Log($"Udate Card List: {String.Join(", ", playerCards)}");
 
 
-        foreach (var cardList in _selectedDecks)
-        {
-            Debug.Log($"cardList.ownerClientId ({cardList.OwnerClientId})" +
-                $" == localClientId({localClientId})");
-            if (cardList.OwnerClientId == localClientId)
-            {
-                Debug.Log("actually update");
-                cardList.UpdateList(playerCards);
-            }
-        }
+        //foreach (var cardList in _selectedDecks)
+        //{
+        //    Debug.Log($"cardList.ownerClientId ({cardList.OwnerClientId})" +
+        //        $" == localClientId({localClientId})");
+        //    if (cardList.OwnerClientId == localClientId)
+        //    {
+        //        Debug.Log("actually update");
+        //        cardList.UpdateList(playerCards);
+        //    }
+        //}
     }
 }
