@@ -13,6 +13,8 @@ public static class Loader {
         LoadingScene,
         LobbyScene,
         CharacterSelectScene,
+        SinglePlayerGameScene,
+        SinglePlayerStartScene,
     }
 
 

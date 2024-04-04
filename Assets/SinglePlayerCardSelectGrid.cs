@@ -1,11 +1,11 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
-using Unity.Netcode;
 
-public class CardSelectGrid : NetworkBehaviour, ICardSelectGrid
+public class SinglePlayerCardSelectGrid : MonoBehaviour, ICardSelectGrid
 {
     [SerializeField] List<CardData> _availableCards;
     [SerializeField] Transform _panelTrans;
@@ -26,18 +26,18 @@ public class CardSelectGrid : NetworkBehaviour, ICardSelectGrid
 
     private GameObject _selectedDeckGO;
     private int _currWins = 0;
-    private GameController _gameController;
+    private SinglePlayerGameController _gameController;
 
     // Get Cards From Collection
     private void Awake()
     {
         // TODO: Replace this with cloud data
-        _availableCards = new List<CardData>() {};
+        _availableCards = new List<CardData>() { };
         _availableCards = Resources.LoadAll<CardData>("ScriptableCards/").ToList();
         _cardCount.text = $"0/{maxDeckSize}";
         onDeckChange += _characterSelectReady.SetHasPickedDeck;
 
-        _gameController = GameController.instance;
+        _gameController = SinglePlayerGameController.instance;
 
 #if !DEDICATED_SERVER
         // This also shows the cards after awaited call is returned 
@@ -55,9 +55,9 @@ public class CardSelectGrid : NetworkBehaviour, ICardSelectGrid
         ShowCards();
     }
 
-    
 
-    [ServerRpc(RequireOwnership = false)]
+
+    //[ServerRpc(RequireOwnership = false)]
     public void InstantiateAndSpawnCardListServerRpc(int[] selectedCardIndexes, ulong OwnerClientId)
     {
         _selectedDeckGO = Instantiate(_cardListPrefab);
@@ -67,7 +67,7 @@ public class CardSelectGrid : NetworkBehaviour, ICardSelectGrid
         _cardList.Assign(_availableCards);
         _cardList.UpdateList(_playerCards.ToArray());
 
-        _selectedDeckGO.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
+        
     }
 
     // Display Cards
@@ -75,7 +75,7 @@ public class CardSelectGrid : NetworkBehaviour, ICardSelectGrid
     {
         Debug.Log($"currWins = {_currWins}");
 
-        for (int i = 0; i < _availableCards.Count; i++) 
+        for (int i = 0; i < _availableCards.Count; i++)
         {
             CardData cardData = _availableCards[i];
             bool cardIsLocked = cardData.winsToUnlock > _currWins;
@@ -85,7 +85,7 @@ public class CardSelectGrid : NetworkBehaviour, ICardSelectGrid
             cardElement.grid = this;
             cardElement.cardIsLocked = cardIsLocked;
             cardData.selectionIndex = i;
-            cardElement.PopulateData(cardData); 
+            cardElement.PopulateData(cardData);
         }
     }
 
@@ -109,7 +109,7 @@ public class CardSelectGrid : NetworkBehaviour, ICardSelectGrid
         }
     }
 
-        // Add cards to deck
+    // Add cards to deck
     public void AddCard(int cardIndex, GameObject cardObject)
     {
         // TODO: it might be a good idea to have multiples of some cards 
@@ -164,11 +164,11 @@ public class CardSelectGrid : NetworkBehaviour, ICardSelectGrid
     {
         _cardCount.text = $"{_playerCards.Count}/{maxDeckSize}";
 
-        _gameController.UpdateCardList(NetworkManager.LocalClientId, _playerCards);
+        _gameController.UpdateCardList(_playerCards);
 
         if (_playerCards.Count == maxDeckSize)
         {
-            onDeckChange?.Invoke(true); 
+            onDeckChange?.Invoke(true);
             return;
         }
 
