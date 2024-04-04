@@ -123,6 +123,54 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &89941236
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 89941238}
+  - component: {fileID: 89941237}
+  m_Layer: 0
+  m_Name: GameController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &89941237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 89941236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b11e33777877e064ba26c2640cf9a3d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _currentCards: []
+  _deck: []
+  playerPrefab: {fileID: 8774316687116799198, guid: 9372b3f9ce3a5d94d8e66802846ab11c, type: 3}
+  cardListPrefab: {fileID: 644130624306697292, guid: 825352c6812e5714592ac08d23b965b5, type: 3}
+--- !u!4 &89941238
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 89941236}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 393.68567, y: 267.8333, z: -2.8240616}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &149895250
 GameObject:
   m_ObjectHideFlags: 0
@@ -326,7 +374,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &305742738
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1267,6 +1315,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b0ac4cb39c0a674f99dc8e93e848919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _availableCards: []
+  _panelTrans: {fileID: 1862943800}
+  _unlockedCardSelectElementPrefab: {fileID: 6988122656960499444, guid: 6ed0d8253ca1c384483cc2286794115e, type: 3}
+  _lockedCardSelectElementPrefab: {fileID: 6988122656960499444, guid: 81a9ce2c0eb42db4199aedcbdc194fb7, type: 3}
+  _cardListPrefab: {fileID: 644130624306697292, guid: 825352c6812e5714592ac08d23b965b5, type: 3}
+  maxDeckSize: 7
+  _cardCount: {fileID: 593891542}
+  _playerCards: 
 --- !u!1 &1843191737
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,15 +14,13 @@ public class SinglePlayerCardSelectGrid : MonoBehaviour, ICardSelectGrid
     [SerializeField] GameObject _cardListPrefab;
     [SerializeField] int maxDeckSize = 10;
     [SerializeField] TMP_Text _cardCount;
-    [SerializeField] CharacterSelectReady _characterSelectReady;
 
     private CardList _cardList;
 
     // TODO: remove serialization, only serialized for easier debugging
     [SerializeField] List<int> _playerCards;
 
-    public delegate void OnDeckChange(bool isFull);
-    public OnDeckChange onDeckChange;
+    public bool isDeckFull { get; private set;}
 
     private GameObject _selectedDeckGO;
     private int _currWins = 0;
@@ -35,24 +33,28 @@ public class SinglePlayerCardSelectGrid : MonoBehaviour, ICardSelectGrid
         _availableCards = new List<CardData>() { };
         _availableCards = Resources.LoadAll<CardData>("ScriptableCards/").ToList();
         _cardCount.text = $"0/{maxDeckSize}";
-        onDeckChange += _characterSelectReady.SetHasPickedDeck;
 
         _gameController = SinglePlayerGameController.instance;
 
 #if !DEDICATED_SERVER
         // This also shows the cards after awaited call is returned 
-        SetCurrentWinsFromCloudSave();
+        SetCurrentWins();
 #endif
     }
 
     //TODO: check that waiting for a return from cloudSave isn't completely detrimental to the games performance
-    private async void SetCurrentWinsFromCloudSave()
+    private void SetCurrentWins()
     {
-        CloudSaveClient cloudSaveClient = new();
-        _currWins = await cloudSaveClient?.Load<int>("winCount");
+        _currWins = GetCurrentWins();
 
 
         ShowCards();
+    }
+
+    //TODO: imlement local save
+    private int GetCurrentWins()
+    {
+        return 0;
     }
 
 
@@ -168,10 +170,10 @@ public class SinglePlayerCardSelectGrid : MonoBehaviour, ICardSelectGrid
 
         if (_playerCards.Count == maxDeckSize)
         {
-            onDeckChange?.Invoke(true);
+            isDeckFull = true;
             return;
         }
 
-        onDeckChange?.Invoke(false);
+        isDeckFull = false;
     }
 }

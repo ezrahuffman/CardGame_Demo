@@ -16,7 +16,11 @@ public class SinglePlayerCharacterSelectUI : MonoBehaviour
 
         readyButton.onClick.AddListener(() =>
         {
-            Loader.Load(Loader.Scene.SinglePlayerGameScene);
+            SinglePlayerCardSelectGrid singlePlayerCardSelectGrid = FindObjectOfType<SinglePlayerCardSelectGrid>();
+            if (singlePlayerCardSelectGrid && singlePlayerCardSelectGrid.isDeckFull)
+            {
+                Loader.Load(Loader.Scene.SinglePlayerGameScene);
+            }
         });
     }
 }
