@@ -3,7 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Deck : NetworkBehaviour
+public class Deck : NetworkBehaviour, IDeck
 {
     [SerializeField] private List<CardData> _remainingCards;
     [SerializeField] private GamePlayer _owningPlayer;

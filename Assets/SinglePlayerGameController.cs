@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,12 +18,25 @@ public class SinglePlayerGameController : MonoBehaviour
     private GamePlayer _winningPlayer;
 
     private string playerName;
+    private SinglePlayerPlayer _player;
+    private SinglePlayerAI _ai;
+    public SinglePlayerAI AI
+    {
+        get
+        {
+            if (_ai == null)
+            {
+                _ai = FindObjectOfType<SinglePlayerAI>();
+            }
+            return _ai;
+        }
+    }
+
+    [SerializeField] private GameObject cardListPrefab;
 
     // TODO: Look into a way to only have the game controller on the Server
     private void Awake()
-    {
-        _players = new List<GamePlayer>();
-
+    { 
         if (instance == null)
         {
             instance = this;
@@ -62,23 +76,23 @@ public class SinglePlayerGameController : MonoBehaviour
             //_currentCards = _cardList.c;
             Debug.Log($"cards: {_cardList.cards.Count}");
 
+
+
+            _player = FindObjectOfType<SinglePlayerPlayer>();
+            _ai = FindObjectOfType<SinglePlayerAI>();
+
+            // TODO: subscribe to events
+            //player.OnDieEvent = OnPlayerDie;
+            //player.onTurnOver += OnPlayerTurnOver;
+
             // Update the UI and set the first turn to start the game
             // TODO: This might just be in the wrong order
-            UpdateUI();
+            //_player.UpdateUI();
             SetFirstTurn();
         }
     }
-   
-    private void SpawnCardLists()
-    {
-        //foreach (var cardList in _selectedDecks)
-        //{
-        //    Debug.Log("SPAWN CARD LIST");
 
-        //TODO: Spawn cards locally here
-        //    cardList.GetComponent<NetworkObject>().SpawnWithOwnership(cardList.clientId, false);
-        //}
-    }
+    
 
     public CardList CreateCardList(List<CardData> availableCards)
     {
@@ -93,24 +107,21 @@ public class SinglePlayerGameController : MonoBehaviour
         return cardList;
     }
 
-    public void AddPlayer(GamePlayer player)
-    {
-        Debug.Log("ADD PLAYER TO GAME CONTROLLER");
-
-        _players.Add(player);
-
-        player.OnDieEvent = OnPlayerDie;
-        player.onTurnOver += OnPlayerTurnOver;
-    }
 
 
     // TODO: refactor this for single player
-    void OnPlayerTurnOver(GamePlayer player)
+    void OnTurnOver(IPlayer player)
     {
-        //GamePlayer nextPlayer = GetOtherPlayer(player);
-        //nextPlayer.canPlay = true;
-
-        //TurnOverClientRpc(nextPlayer.OwnerClientId);
+        if (player == _player)
+        {
+            Debug.Log("Player Turn Over");
+            AI.canPlay = true;
+        }
+        else
+        {
+            Debug.Log("AI Turn Over");
+            player.canPlay = true;
+        }
     }
 
 
@@ -127,26 +138,25 @@ public class SinglePlayerGameController : MonoBehaviour
         //NetworkManager.SceneManager.OnLoadComplete += ShowEndGameMessage;
     }
 
-
-
-    //TODO: refactor this for single player
-    public void UpdateUI()
+    internal void DealDmg(float effectAmnt, bool isPlayer)
     {
-        Debug.Log("UPDATE UI");
+        // reciver = health system
+        HealthSystem reciever;
+        if (!isPlayer)
+        {
+            //TODO: Deal Damage to Player
+            // reciever = player.HealthSystem;
+            Debug.Log("Deal Damage to Player");
+            reciever = _player.HealthSystem;
+        }
+        else
+        {
+            // reciever = AI.HealthSystem;
+            Debug.Log("Deal Damage to AI");
+            reciever = _ai.HealthSystem;
+        }
 
-        //player.UpdateUI();
-    }
-
- 
-
-
-
-    internal void DealDmg(float effectAmnt, ulong senderClientId)
-    {
-
-        GamePlayer reciever = _players[0].OwnerClientId == senderClientId ? _players[1] : _players[0];
-
-        reciever.TakeDmg(effectAmnt);
+        reciever.Dmg(effectAmnt);
 
     }
 
@@ -157,24 +167,6 @@ public class SinglePlayerGameController : MonoBehaviour
             return _players;
         }
     }
-
-    [SerializeField] private GameObject playerPrefab;
-    [SerializeField] private GameObject cardListPrefab;
-
-
-
-
-
-
-    public string GetPlayerName()
-    {
-        return playerName;
-    }
-
-
-   
-
-
 
     internal void SetFirstTurn()
     {
@@ -198,7 +190,6 @@ public class SinglePlayerGameController : MonoBehaviour
             //nextPlayer.canPlay = true;
             //nextPlayer.StartTurn();
         }
-        UpdateUI();
 
     }
 
@@ -207,24 +198,11 @@ public class SinglePlayerGameController : MonoBehaviour
         _cardList.UpdateList(playerCards.ToArray(), true);   
     }
 
-   
-
-    
-
-    private void UpdateCardListLogic(ulong localClientId, int[] playerCards)
+    public CardList SelectedCards
     {
-        Debug.Log($"Udate Card List: {String.Join(", ", playerCards)}");
-
-
-        //foreach (var cardList in _selectedDecks)
-        //{
-        //    Debug.Log($"cardList.ownerClientId ({cardList.OwnerClientId})" +
-        //        $" == localClientId({localClientId})");
-        //    if (cardList.OwnerClientId == localClientId)
-        //    {
-        //        Debug.Log("actually update");
-        //        cardList.UpdateList(playerCards);
-        //    }
-        //}
+        get
+        {
+            return _cardList;
+        }
     }
 }

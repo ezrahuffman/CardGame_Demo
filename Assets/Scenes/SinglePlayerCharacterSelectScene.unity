@@ -152,9 +152,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b11e33777877e064ba26c2640cf9a3d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _currentCards: []
-  _deck: []
-  playerPrefab: {fileID: 8774316687116799198, guid: 9372b3f9ce3a5d94d8e66802846ab11c, type: 3}
   cardListPrefab: {fileID: 644130624306697292, guid: 825352c6812e5714592ac08d23b965b5, type: 3}
 --- !u!4 &89941238
 Transform:

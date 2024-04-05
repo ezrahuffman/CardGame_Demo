@@ -1,15 +1,15 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
-[System.Serializable]
-public class GamePlayer : NetworkBehaviour
+public class SinglePlayerPlayer : MonoBehaviour, IPlayer
 {
     [SerializeField] protected float _maxHealth = 100f;
-    [SerializeField] protected Deck _deck;
+    [SerializeField] protected IDeck _deck;
     [SerializeField] protected Hand _hand;
     [SerializeField] protected TMP_Text _enemyHealthTxt;
     [SerializeField] protected TMP_Text _playerHealthTxt;
@@ -35,44 +35,34 @@ public class GamePlayer : NetworkBehaviour
     public delegate void OnTurnOver(GamePlayer player);
     public OnTurnOver onTurnOver;
 
-    public bool canPlay = false;
+    public bool canPlay { get; set; } = false;
 
-    private GameController _gameController;
+    private SinglePlayerGameController _gameController;
 
     // This is just for easier debugging
     private float enemyHealth;
     private List<Card> enemyCards;
 
-    public override void OnNetworkSpawn()
-    {
-        _gameController = GameController.instance;
-       
-        Initialize();
-
-        _gameController.AddPlayer(this);
-
-        base.OnNetworkSpawn();
-    }
-
     internal void DealDmg(float effectAmnt)
     {
-        if (!IsServer && IsOwner)
-        {
-            DealDmgServerRpc(effectAmnt);
-            return;
-        }
+        _gameController.DealDmg(effectAmnt, isPlayer: true);
+        //if (!IsServer && IsOwner)
+        //{
+        //    DealDmgServerRpc(effectAmnt);
+        //    return;
+        //}
 
-        if (!IsOwner)
-        {
-            Debug.Log($"DealDmg ownerClientID: {OwnerClientId}");
-        }
+        //if (!IsOwner)
+        //{
+        //    Debug.Log($"DealDmg ownerClientID: {OwnerClientId}");
+        //}
     }
 
-    [ServerRpc]
-    internal void DealDmgServerRpc(float effectAmnt, ServerRpcParams serverRpcParams = default)
-    {
-        _gameController.DealDmg(effectAmnt, serverRpcParams.Receive.SenderClientId);
-    }
+    //[ServerRpc]
+    //internal void DealDmgServerRpc(float effectAmnt, ServerRpcParams serverRpcParams = default)
+    //{
+    //    _gameController.DealDmg(effectAmnt, serverRpcParams.Receive.SenderClientId);
+    //}
 
     #region Discard
     internal void Discard(Card card)
@@ -85,24 +75,24 @@ public class GamePlayer : NetworkBehaviour
             return;
         }
         HideCardAndOpenSlot(card);
-        DiscardServerRpc(cardIndex);
+        //DiscardServerRpc(cardIndex);
 
-        if (IsOwner)
-        {
-            UpdateUIServerRpc();
-        }
+        //if (IsOwner)
+        //{
+        //    UpdateUIServerRpc();
+        //}
     }
-    
-    [ServerRpc]
-    void DiscardServerRpc(int cardIndex, ServerRpcParams serverRpcParams = default)
-    {
-        HideCardAndOpenSlot(Hand.GetAllSlots()[cardIndex]);
 
-        DiscardClientRpc(cardIndex, serverRpcParams.Receive.SenderClientId);
-        
-        _gameController.UpdateUI();
-        
-    }
+    //[ServerRpc]
+    //void DiscardServerRpc(int cardIndex, ServerRpcParams serverRpcParams = default)
+    //{
+    //    HideCardAndOpenSlot(Hand.GetAllSlots()[cardIndex]);
+
+    //    DiscardClientRpc(cardIndex, serverRpcParams.Receive.SenderClientId);
+
+    //    _gameController.UpdateUI();
+
+    //}
 
     internal void SetHasDrawn(bool v)
     {
@@ -111,19 +101,19 @@ public class GamePlayer : NetworkBehaviour
 
     [ClientRpc]
 
-    void DiscardClientRpc(int cardIndex,ulong senderClientId)
-    {
-        if(senderClientId == NetworkManager.LocalClientId)
-        {
-            return;
-        }
+    //void DiscardClientRpc(int cardIndex, ulong senderClientId)
+    //{
+    //    if (senderClientId == NetworkManager.LocalClientId)
+    //    {
+    //        return;
+    //    }
 
-        // Hide the enemy card for players that are not the local player
-        HideCardAndOpenSlot(Hand.GetAllSlots()[cardIndex]);
+    //    // Hide the enemy card for players that are not the local player
+    //    HideCardAndOpenSlot(Hand.GetAllSlots()[cardIndex]);
 
-        // This is the only server rpc that doesn't require the sender to be the owner
-        _gameController.UpdateUIServerRpc();
-    }
+    //    // This is the only server rpc that doesn't require the sender to be the owner
+    //    _gameController.UpdateUIServerRpc();
+    //}
 
     void HideCardAndOpenSlot(Card card)
     {
@@ -138,6 +128,7 @@ public class GamePlayer : NetworkBehaviour
 
     private void Initialize()
     {
+        _gameController = SinglePlayerGameController.instance;
 
         Debug.Log("INITIALIZE PLAYER");
 
@@ -145,7 +136,7 @@ public class GamePlayer : NetworkBehaviour
         {
             _healthSystem = new HealthSystem(_maxHealth);
             _healthSystem.onHealthChange += OnHealthChange;
-            _deck.SetOwningPlayer(this);
+            //_deck.SetOwningPlayer(this);
         }
 
         if (enemyStats == null)
@@ -153,64 +144,83 @@ public class GamePlayer : NetworkBehaviour
             enemyStats = new EnemyStats();
         }
 
+        foreach(CardData card in _gameController.SelectedCards.cards)
+        {
+            Debug.Log($"selected card: {card.cardName}");
+        }
+
 
         // Parent player to the canvas
-        if (IsSpawned && IsOwner)
-        {
-            ReparentPlayerToCanvasServerRpc(); //TODO: This might need to be moved to GameController.
-        }
+        //if (IsSpawned && IsOwner)
+        //{
+        //    ReparentPlayerToCanvasServerRpc(); //TODO: This might need to be moved to GameController.
+        //}
+        _deck = GetComponent<SinglePlayerDeck>();
+        _deck.SetDeck(_gameController.SelectedCards.cards);
 
-        
+
+        UpdateUI();
     }
 
-    internal void UpdateUI(GamePlayer otherPlayer)
+    internal void UpdateUI()
     {
-        if (!IsLocalPlayer)
-        {
-            // This Player is the oponent on the client
+        //if (!IsLocalPlayer)
+        //{
+        //    // This Player is the oponent on the client
 
-            // Hide this UI
+        //    // Hide this UI
 
-            _hand.GetUI().SetActive(false);
-            _deck.GetUI().SetActive(false);
-            _skipButton.SetActive(false);
-            _turnIndicator.SetActive(false);
-            _background.SetActive(false);
-            _panel.SetActive(false);
+        //    _hand.GetUI().SetActive(false);
+        //    _deck.GetUI().SetActive(false);
+        //    _skipButton.SetActive(false);
+        //    _turnIndicator.SetActive(false);
+        //    _background.SetActive(false);
+        //    _panel.SetActive(false);
 
-            return; 
-        }
+        //    return;
+        //}
 
         _turnIndicator.gameObject.SetActive(canPlay);
         _skipButton.SetActive(canPlay);
 
-        SetEnemyHealth(otherPlayer.Health);
+        if (_gameController == null)
+        {
+            _gameController = SinglePlayerGameController.instance;
+        }
+
+        IPlayer aiPlayer = _gameController.AI;
+        if (aiPlayer == null)
+        {
+            Debug.Log("AI is null");
+            return;
+        }
+        SetEnemyHealth(aiPlayer.HealthSystem.currHealth);
         SetPlayerHealth(Health);
 
-        var trueEnemyHand = otherPlayer.Hand.GetAllSlots();
-        var enemyHandSlots = _enemyHand.GetAllSlots();
-        for (int i = 0; i < trueEnemyHand.Length; i++)
-        {
-            var enemyCard = trueEnemyHand[i];
-            var enemyCardUI = enemyHandSlots[i];
-            if (enemyCard.GetCardData() == null)
-            {
-                Debug.Log($"enemy card is null");
-                enemyCardUI.gameObject.SetActive(false);
-            }
-            else
-            {
-                Debug.Log($"enemyCard_{i}: {enemyCard.GetCardData().cardName}");
+        //var trueEnemyHand = aiPlayer.Hand.GetAllSlots();
+        //var enemyHandSlots = _enemyHand.GetAllSlots();
+        //for (int i = 0; i < trueEnemyHand.Length; i++)
+        //{
+        //    var enemyCard = trueEnemyHand[i];
+        //    var enemyCardUI = enemyHandSlots[i];
+        //    if (enemyCard.GetCardData() == null)
+        //    {
+        //        Debug.Log($"enemy card is null");
+        //        enemyCardUI.gameObject.SetActive(false);
+        //    }
+        //    else
+        //    {
+        //        Debug.Log($"enemyCard_{i}: {enemyCard.GetCardData().cardName}");
 
 
-                enemyCardUI.PopulateData(enemyCard.GetCardData());
-            }
-        }
+        //        enemyCardUI.PopulateData(enemyCard.GetCardData());
+        //    }
+        //}
     }
 
     private void SetEnemyHealth(float health)
     {
-        if(health == 0)
+        if (health == 0)
         {
             _enemyHealthTxt.enabled = false;
             return;
@@ -232,15 +242,15 @@ public class GamePlayer : NetworkBehaviour
         _playerHealthTxt.enabled = true;
     }
 
-    [ServerRpc]
-    void ReparentPlayerToCanvasServerRpc()
-    {
-        Debug.Log("Parent Object");
-        Transform canvasTrans = FindObjectOfType<Canvas>().transform;
-        transform.SetParent(canvasTrans);
-        SetPlayerTransformPosition();
-        SetPlayerTransformPositionClientRpc();
-    }
+    //[ServerRpc]
+    //void ReparentPlayerToCanvasServerRpc()
+    //{
+    //    Debug.Log("Parent Object");
+    //    Transform canvasTrans = FindObjectOfType<Canvas>().transform;
+    //    transform.SetParent(canvasTrans);
+    //    SetPlayerTransformPosition();
+    //    SetPlayerTransformPositionClientRpc();
+    //}
 
     void SetPlayerTransformPosition()
     {
@@ -250,14 +260,14 @@ public class GamePlayer : NetworkBehaviour
         rectTrans.localScale = Vector3.one;
     }
 
-    [ClientRpc]
-    void SetPlayerTransformPositionClientRpc()
-    {
-        SetPlayerTransformPosition();
-    }
+    //[ClientRpc]
+    //void SetPlayerTransformPositionClientRpc()
+    //{
+    //    SetPlayerTransformPosition();
+    //}
 
-   
-    private void  Awake()
+
+    private void Start()
     {
         Initialize();
     }
@@ -276,7 +286,7 @@ public class GamePlayer : NetworkBehaviour
     {
         _hasDiscarded = true;
         CheckTurn();
-    } 
+    }
 
     public void Skip()
     {
@@ -288,12 +298,12 @@ public class GamePlayer : NetworkBehaviour
         _hasSkipped = true;
         CheckTurn();
     }
-    
+
 
     #region Turns
     void CheckTurn()
     {
-        Debug.Log($"CheckTurn() on {NetworkManager.LocalClientId}; ownerId: {OwnerClientId}");
+        //Debug.Log($"CheckTurn() on {NetworkManager.LocalClientId}; ownerId: {OwnerClientId}");
 
         if (GetShouldEndTurn())
         {
@@ -329,7 +339,7 @@ public class GamePlayer : NetworkBehaviour
     {
         ResetPlayer();
 
-        onTurnOver?.Invoke(this);
+        //onTurnOver?.Invoke(this);
     }
 
     void ResetPlayer()
@@ -344,7 +354,7 @@ public class GamePlayer : NetworkBehaviour
 
     public void TakeDmg(float amnt)
     {
-        Debug.Log($"{OwnerClientId} (local: {GetInstanceID()} has taken {amnt} dmg");
+        //Debug.Log($"{OwnerClientId} (local: {GetInstanceID()} has taken {amnt} dmg");
         _healthSystem.Dmg(amnt);
     }
 
@@ -363,22 +373,22 @@ public class GamePlayer : NetworkBehaviour
         }
 
         // Propagate changes
-        if (IsOwner)
-        {
-            Debug.Log("Health changed, update UI");
-            UpdateUIServerRpc();
-        }
-        else
-        {
-            Debug.Log($"UpateUI ownerClientID: {OwnerClientId}");
-        }
+        //if (IsOwner)
+        //{
+        //    Debug.Log("Health changed, update UI");
+        //    UpdateUIServerRpc();
+        //}
+        //else
+        //{
+        //    Debug.Log($"UpateUI ownerClientID: {OwnerClientId}");
+        //}
     }
 
-    [ServerRpc]
-    void UpdateUIServerRpc()
-    {
-        _gameController.UpdateUI();
-    }
+    //[ServerRpc]
+    //void UpdateUIServerRpc()
+    //{
+    //    _gameController.UpdateUI();
+    //}
 
     public float Health
     {
@@ -421,5 +431,7 @@ public class GamePlayer : NetworkBehaviour
     {
         get { return GetComponent<CardList>(); }
     }
+
+    public HealthSystem HealthSystem => _healthSystem;
 
 }
