@@ -8,4 +8,7 @@ public interface IPlayer
     {get;}
 
     public bool canPlay { get; set; }
+    public void Discard(Card card);
+    public void HasPerformedAction(Card card);
+    public void DealDmg(float amnt);
 }

@@ -43,7 +43,7 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
     private float enemyHealth;
     private List<Card> enemyCards;
 
-    internal void DealDmg(float effectAmnt)
+    public void DealDmg(float effectAmnt)
     {
         _gameController.DealDmg(effectAmnt, isPlayer: true);
         //if (!IsServer && IsOwner)
@@ -65,7 +65,7 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
     //}
 
     #region Discard
-    internal void Discard(Card card)
+    public void Discard(Card card)
     {
         int cardIndex = Array.IndexOf(Hand.GetAllSlots(), card);
 
@@ -274,7 +274,7 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
 
     // Called after player has used a card
     // TODO: FUTURE this could be good place for cards that don't end your turn
-    internal void HasPerformedAction(Card card)
+    public void HasPerformedAction(Card card)
     {
         _hasPlayed = true;
         CheckTurn();

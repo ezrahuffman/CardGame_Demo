@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using UnityEngine;
+
 public class HealthSystem
 {
     public float maxHealth { private set; get; }

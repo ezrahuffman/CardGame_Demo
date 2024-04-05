@@ -6,6 +6,7 @@ public class Hand : MonoBehaviour
     [SerializeField] private GameObject _handUI;
     [SerializeField] private Card[] _currentCards;
     [SerializeField] private GamePlayer _player;
+    private IPlayer _playerInterface;
 
     private List<Card> _availableSlots = new List<Card>();
 
@@ -18,13 +19,26 @@ public class Hand : MonoBehaviour
             Debug.LogError("There are no cards in the hand. Make sure to set CurrentCards in the editor.");
         }
 
+
+        if (_player == null)
+        {
+            _playerInterface = GetComponent<SinglePlayerPlayer>();
+            if (_playerInterface == null)
+            {
+                _playerInterface = FindObjectOfType<SinglePlayerAI>();
+            }
+        } 
+        else
+        {
+            _playerInterface = _player;
+        }
         // Update cards on screen by populating UI with data from card
         foreach (var card in _currentCards)
         {
             if (!card.isActiveAndEnabled)
             {
                 _availableSlots.Add(card);
-                card.SetOwningPlayer(_player);
+                card.SetOwningPlayer(_playerInterface);
             }
         }
     }

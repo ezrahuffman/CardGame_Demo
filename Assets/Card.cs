@@ -24,7 +24,7 @@ public class Card : MonoBehaviour
     private string _cardName;
 
     [SerializeField]
-    private GamePlayer _owningPlayer;
+    private IPlayer _owningPlayer;
 
     private void Awake()
     {
@@ -51,6 +51,7 @@ public class Card : MonoBehaviour
         // Don't do anything if we can't play
         if (!_owningPlayer.canPlay || _owningPlayer.HasPlayed)
         {
+            Debug.Log($"Can't play this card, OwningPlayer: {_owningPlayer}, Canplay: {_owningPlayer.canPlay}, HasPlayed: {_owningPlayer.HasPlayed}");
             return;
         }
 
@@ -123,7 +124,7 @@ public class Card : MonoBehaviour
         return _data;
     }
 
-    public void SetOwningPlayer(GamePlayer player)
+    public void SetOwningPlayer(IPlayer player)
     {
         _owningPlayer = player;
     }

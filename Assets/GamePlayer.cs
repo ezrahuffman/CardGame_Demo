@@ -6,7 +6,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 [System.Serializable]
-public class GamePlayer : NetworkBehaviour
+public class GamePlayer : NetworkBehaviour, IPlayer
 {
     [SerializeField] protected float _maxHealth = 100f;
     [SerializeField] protected Deck _deck;
@@ -22,6 +22,7 @@ public class GamePlayer : NetworkBehaviour
     public EnemyStats enemyStats;
 
     protected HealthSystem _healthSystem;
+    public HealthSystem HealthSystem => _healthSystem;
 
     [SerializeField]
     protected bool _hasDiscarded;
@@ -35,7 +36,7 @@ public class GamePlayer : NetworkBehaviour
     public delegate void OnTurnOver(GamePlayer player);
     public OnTurnOver onTurnOver;
 
-    public bool canPlay = false;
+    public bool canPlay { get; set; } = false;
 
     private GameController _gameController;
 
@@ -54,7 +55,7 @@ public class GamePlayer : NetworkBehaviour
         base.OnNetworkSpawn();
     }
 
-    internal void DealDmg(float effectAmnt)
+    public void DealDmg(float effectAmnt)
     {
         if (!IsServer && IsOwner)
         {
@@ -75,7 +76,7 @@ public class GamePlayer : NetworkBehaviour
     }
 
     #region Discard
-    internal void Discard(Card card)
+    public void Discard(Card card)
     {
         int cardIndex = Array.IndexOf(Hand.GetAllSlots(), card);
 
@@ -264,7 +265,7 @@ public class GamePlayer : NetworkBehaviour
 
     // Called after player has used a card
     // TODO: FUTURE this could be good place for cards that don't end your turn
-    internal void HasPerformedAction(Card card)
+    public void HasPerformedAction(Card card)
     {
         _hasPlayed = true;
         CheckTurn();

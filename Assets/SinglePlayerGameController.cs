@@ -177,10 +177,10 @@ public class SinglePlayerGameController : MonoBehaviour
         int index = UnityEngine.Random.Range(0, 2);
         //GamePlayer startingPlayer = _players[index];
 
-        if (index == 0)
+        if (true)//index == 0)
         {
             Debug.Log("Player Starts");
-            //startingPlayer.canPlay = true;
+           _player.canPlay = true;
             //startingPlayer.StartTurn();
         }
         else
