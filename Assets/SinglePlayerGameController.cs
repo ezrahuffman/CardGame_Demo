@@ -157,7 +157,7 @@ public class SinglePlayerGameController : MonoBehaviour
         }
 
         reciever.Dmg(effectAmnt);
-
+        _player.UpdateUI();
     }
 
     public List<GamePlayer> Players
