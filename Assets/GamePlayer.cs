@@ -105,7 +105,7 @@ public class GamePlayer : NetworkBehaviour, IPlayer
         
     }
 
-    internal void SetHasDrawn(bool v)
+    public void SetHasDrawn(bool v)
     {
         _hasDrawnCard = v;
     }
@@ -164,7 +164,7 @@ public class GamePlayer : NetworkBehaviour, IPlayer
         
     }
 
-    internal void UpdateUI(GamePlayer otherPlayer)
+    public void UpdateUI(GamePlayer otherPlayer)
     {
         if (!IsLocalPlayer)
         {

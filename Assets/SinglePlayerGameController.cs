@@ -82,8 +82,10 @@ public class SinglePlayerGameController : MonoBehaviour
             _ai = FindObjectOfType<SinglePlayerAI>();
 
             // TODO: subscribe to events
-            //player.OnDieEvent = OnPlayerDie;
-            //player.onTurnOver += OnPlayerTurnOver;
+            _player.OnDieEvent = OnPlayerDie;
+            _player.onTurnOver += OnTurnOver;
+            _ai.onTurnOver += OnTurnOver;
+            _ai.OnDieEvent = OnAIDie;
 
             // Update the UI and set the first turn to start the game
             // TODO: This might just be in the wrong order
@@ -108,34 +110,47 @@ public class SinglePlayerGameController : MonoBehaviour
     }
 
 
-
-    // TODO: refactor this for single player
     void OnTurnOver(IPlayer player)
     {
         if (player == _player)
         {
             Debug.Log("Player Turn Over");
             AI.canPlay = true;
+            AI.Play();
         }
         else
         {
             Debug.Log("AI Turn Over");
-            player.canPlay = true;
+            _player.canPlay = true;
         }
+
+        _player.UpdateUI(null);
     }
 
+    // TODO: this can and should probably be eliminated. Is just used by the AI to reset the UI
+    public void UpdateUI()
+    {
+        _player.UpdateUI(null);
+    }
 
     // TODO: refactor this for single player
     public void OnPlayerDie()
     {
         //TODO: Player Die
-        Debug.Log("player has died");
-        _winningPlayer = _players[0].Health == 0 ? _players[1] : _players[0];
+        Debug.Log("player has died, you lose");
 
         //SetWinningPlayerClientRpc(_winningPlayer.OwnerClientId);
 
         //NetworkManager.SceneManager.LoadScene("End Scene", LoadSceneMode.Single);
         //NetworkManager.SceneManager.OnLoadComplete += ShowEndGameMessage;
+    }
+
+    public void OnAIDie()
+    {
+        //TODO: Player Die
+        Debug.Log("AI has died, you win");
+
+       
     }
 
     internal void DealDmg(float effectAmnt, bool isPlayer)
@@ -157,7 +172,7 @@ public class SinglePlayerGameController : MonoBehaviour
         }
 
         reciever.Dmg(effectAmnt);
-        _player.UpdateUI();
+        _player.UpdateUI(null);
     }
 
     public List<GamePlayer> Players

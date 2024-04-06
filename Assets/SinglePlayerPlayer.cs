@@ -32,7 +32,7 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
     [SerializeField]
     protected bool _hasDrawnCard;
 
-    public delegate void OnTurnOver(GamePlayer player);
+    public delegate void OnTurnOver(IPlayer player);
     public OnTurnOver onTurnOver;
 
     public bool canPlay { get; set; } = false;
@@ -94,7 +94,7 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
 
     //}
 
-    internal void SetHasDrawn(bool v)
+    public void SetHasDrawn(bool v)
     {
         _hasDrawnCard = v;
     }
@@ -135,9 +135,9 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
         if (_healthSystem == null)
         {
             _healthSystem = new HealthSystem(_maxHealth);
-            _healthSystem.onHealthChange += OnHealthChange;
             //_deck.SetOwningPlayer(this);
         }
+        _healthSystem.onHealthChange += OnHealthChange;
 
         if (enemyStats == null)
         {
@@ -159,10 +159,10 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
         _deck.SetDeck(_gameController.SelectedCards.cards);
 
 
-        UpdateUI();
+        UpdateUI(null);
     }
 
-    internal void UpdateUI()
+    public void UpdateUI(GamePlayer otherPlayer)
     {
         //if (!IsLocalPlayer)
         //{
@@ -242,30 +242,6 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
         _playerHealthTxt.enabled = true;
     }
 
-    //[ServerRpc]
-    //void ReparentPlayerToCanvasServerRpc()
-    //{
-    //    Debug.Log("Parent Object");
-    //    Transform canvasTrans = FindObjectOfType<Canvas>().transform;
-    //    transform.SetParent(canvasTrans);
-    //    SetPlayerTransformPosition();
-    //    SetPlayerTransformPositionClientRpc();
-    //}
-
-    void SetPlayerTransformPosition()
-    {
-        RectTransform rectTrans = transform as RectTransform;
-        rectTrans.localPosition = Vector3.zero;
-        rectTrans.rect.Set(rectTrans.rect.x, rectTrans.rect.y, Screen.width, Screen.height);
-        rectTrans.localScale = Vector3.one;
-    }
-
-    //[ClientRpc]
-    //void SetPlayerTransformPositionClientRpc()
-    //{
-    //    SetPlayerTransformPosition();
-    //}
-
 
     private void Start()
     {
@@ -307,7 +283,7 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
 
         if (GetShouldEndTurn())
         {
-            GoNextTurnServerRpc();
+            GoNextTurn();
         }
 
         //if (IsOwner)
@@ -339,11 +315,12 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
     {
         ResetPlayer();
 
-        //onTurnOver?.Invoke(this);
+        onTurnOver?.Invoke(this);
     }
 
     void ResetPlayer()
     {
+        Debug.Log("ResetPlayer()"); 
         _hasDiscarded = false;
         _hasPlayed = false;
         _hasSkipped = false;
@@ -408,7 +385,12 @@ public class SinglePlayerPlayer : MonoBehaviour, IPlayer
 
     public HealthSystem.OnDie OnDieEvent
     {
-        set { _healthSystem.onDie += value; }
+        set { 
+            if (_healthSystem == null)
+            {
+                _healthSystem = new HealthSystem(_maxHealth);
+            }
+            _healthSystem.onDie += value; }
     }
 
     public Hand Hand

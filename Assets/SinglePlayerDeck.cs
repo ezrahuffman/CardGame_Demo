@@ -10,10 +10,10 @@ public class SinglePlayerDeck : MonoBehaviour, IDeck
     [SerializeField] private SinglePlayerPlayer _owningPlayer;
     [SerializeField] private SinglePlayerDeck _deck;
     [SerializeField] private Button _deckUI;
-
+    private IPlayer _playerInterface;
 
     SinglePlayerGameController _gameController;
-    private Hand _hand;
+    [SerializeField] private Hand _hand;
 
     public void Start()
     {
@@ -23,7 +23,18 @@ public class SinglePlayerDeck : MonoBehaviour, IDeck
     private void Initialize()
     {
         _owningPlayer = GetComponent<SinglePlayerPlayer>();
-        _hand = GetComponent<Hand>();
+        if (_owningPlayer == null)
+        {
+           _playerInterface = GetComponent<SinglePlayerAI>();
+        }
+        else
+        {
+            _playerInterface = _owningPlayer;
+        }
+        if (_hand == null)
+        { 
+            _hand = GetComponent<Hand>();
+        }
     }
 
     public void DrawCard()
@@ -55,9 +66,9 @@ public class SinglePlayerDeck : MonoBehaviour, IDeck
             _deckUI.gameObject.SetActive(false);
         }
 
-        _owningPlayer.UpdateUI();
+        _playerInterface.UpdateUI(null);
 
-        _owningPlayer.SetHasDrawn(true);
+        _playerInterface.SetHasDrawn(true);
     }
 
     private CardData GetNextCard()

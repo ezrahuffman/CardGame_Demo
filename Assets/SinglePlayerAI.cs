@@ -10,6 +10,15 @@ public class SinglePlayerAI : MonoBehaviour, IPlayer
     [SerializeField] Hand _hand;
     float prevHealth;
 
+    // TODO: this is a placeholder
+    // this should be replaced with a deck that is generated at the start of the game
+    [SerializeField] SinglePlayerDeck _deck;
+
+    bool _hasDrawn;
+
+    public delegate void OnTurnOver(IPlayer player);
+    public OnTurnOver onTurnOver;
+
     private void Awake()
     {
         _healthSystem = new HealthSystem(_maxHealth);
@@ -48,5 +57,36 @@ public class SinglePlayerAI : MonoBehaviour, IPlayer
     {
         Debug.Log($"Dealing {amnt} damage to player");
         SinglePlayerGameController.instance.DealDmg(amnt, isPlayer: false);
+    }
+
+    public void Play()
+    {
+        // skeleton for AI play
+
+        // if there isn't a card to play, draw one
+        if (_hand.GetAllSlots()[0].isActiveAndEnabled == false) {
+            _deck.DrawCard();
+        }
+
+        // if there is a card to play, play it
+        Card card = _hand.GetAllSlots()[0];
+        if(card.isActiveAndEnabled == true)
+        {
+            card.Action();
+        }
+
+        // end turn
+        canPlay = false;
+        onTurnOver?.Invoke(this);
+    }
+
+    public void SetHasDrawn(bool hasDrawn)
+    {
+        _hasDrawn = hasDrawn;
+    }
+
+    public void UpdateUI(GamePlayer otherPlayer)
+    {
+        SinglePlayerGameController.instance.UpdateUI();
     }
 }

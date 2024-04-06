@@ -11,4 +11,8 @@ public interface IPlayer
     public void Discard(Card card);
     public void HasPerformedAction(Card card);
     public void DealDmg(float amnt);
+
+    public void SetHasDrawn(bool hasDrawn);
+
+    public void UpdateUI(GamePlayer otherPlayer);
 }

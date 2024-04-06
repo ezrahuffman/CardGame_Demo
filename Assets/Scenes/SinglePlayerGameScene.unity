@@ -319,6 +319,18 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 38567253
       objectReference: {fileID: 0}
+    - target: {fileID: 6092825694781748551, guid: ac976838d2939fd4b93eaf04a479262f, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 794851258}
+    - target: {fileID: 6092825694781748551, guid: ac976838d2939fd4b93eaf04a479262f, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Skip
+      objectReference: {fileID: 0}
+    - target: {fileID: 6092825694781748551, guid: ac976838d2939fd4b93eaf04a479262f, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: SinglePlayerPlayer, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 8774316687116799197, guid: ac976838d2939fd4b93eaf04a479262f, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1722159036
@@ -443,6 +455,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88c034f72d4fda94e84b0c174689c5b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &794851258 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3678649795565432433, guid: ac976838d2939fd4b93eaf04a479262f, type: 3}
+  m_PrefabInstance: {fileID: 794851255}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8aafd72395d65e40b93b233b9381e94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1871282632
 GameObject:
   m_ObjectHideFlags: 0
@@ -484,6 +507,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1881993458}
   - component: {fileID: 1881993457}
+  - component: {fileID: 1881993459}
   m_Layer: 0
   m_Name: SinglePlayerAI
   m_TagString: Untagged
@@ -505,6 +529,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _maxHealth: 100
   _hand: {fileID: 794851257}
+  _deck: {fileID: 1881993459}
 --- !u!4 &1881993458
 Transform:
   m_ObjectHideFlags: 0
@@ -520,6 +545,27 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1881993459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1881993456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 984bd027580982c468c6fb11b062d2e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _remainingCards:
+  - {fileID: 11400000, guid: e0f9bd5c2a197784e943c0e0de6c8b10, type: 2}
+  - {fileID: 11400000, guid: eb6ebdf830623694fbf718479fa59746, type: 2}
+  - {fileID: 11400000, guid: 99afa4925ed6e9744a9d48dc2ef86873, type: 2}
+  - {fileID: 11400000, guid: f14f1ac15ec7d7844afaf7f0c7bf2e92, type: 2}
+  _owningPlayer: {fileID: 0}
+  _deck: {fileID: 0}
+  _deckUI: {fileID: 0}
+  _hand: {fileID: 794851257}
 --- !u!1 &1941227724
 GameObject:
   m_ObjectHideFlags: 0
